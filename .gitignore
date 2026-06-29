@@ -7,3 +7,4 @@ out
 !.env.example
 next-env.d.ts
 .vercel
+*.tsbuildinfo
