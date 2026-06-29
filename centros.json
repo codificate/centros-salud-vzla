@@ -1,0 +1,607 @@
+[
+  {
+    "id": 1,
+    "nombre": "Hospital Universitario de Caracas (Clínico Universitario)",
+    "tipo": "Público",
+    "direccion": "Ciudad Universitaria de Caracas, UCV, Los Chaguaramos",
+    "geolocalizacion": {
+      "latitud": 10.4871,
+      "longitud": -66.8860
+    },
+    "telefono": "+58 212-6054050"
+  },
+  {
+    "id": 2,
+    "nombre": "Hospital de Clínicas Caracas",
+    "tipo": "Privado",
+    "direccion": "Avenida Panteón con Avenida Alameda, San Bernardino",
+    "geolocalizacion": {
+      "latitud": 10.5102,
+      "longitud": -66.8989
+    },
+    "telefono": "+58 212-5086111"
+  },
+  {
+    "id": 3,
+    "nombre": "Policlínica Metropolitana",
+    "tipo": "Privado",
+    "direccion": "Calle A-1, Urbanización Caurimare",
+    "geolocalizacion": {
+      "latitud": 10.4908,
+      "longitud": -66.8322
+    },
+    "telefono": "+58 212-9080100"
+  },
+  {
+    "id": 4,
+    "nombre": "Hospital Militar Dr. Carlos Arvelo",
+    "tipo": "Público",
+    "direccion": "Avenida José Ángel Lamas, San Martín",
+    "geolocalizacion": {
+      "latitud": 10.4998,
+      "longitud": -66.9324
+    },
+    "telefono": "+58 212-4061111"
+  },
+  {
+    "id": 5,
+    "nombre": "Centro Médico de Caracas",
+    "tipo": "Privado",
+    "direccion": "Avenida Eraso, Plaza Washington, San Bernardino",
+    "geolocalizacion": {
+      "latitud": 10.5085,
+      "longitud": -66.8993
+    },
+    "telefono": "+58 212-5559111"
+  },
+  {
+    "id": 6,
+    "nombre": "Hospital de Niños J.M. de los Ríos",
+    "tipo": "Público",
+    "direccion": "Avenida Vollmer, San Bernardino",
+    "geolocalizacion": {
+      "latitud": 10.5065,
+      "longitud": -66.8995
+    },
+    "telefono": "+58 212-5743333"
+  },
+  {
+    "id": 7,
+    "nombre": "Clínica El Ávila",
+    "tipo": "Privado",
+    "direccion": "6ta Transversal con Avenida San Juan Bosco, Altamira",
+    "geolocalizacion": {
+      "latitud": 10.4925,
+      "longitud": -66.8522
+    },
+    "telefono": "+58 212-2761111"
+  },
+  {
+    "id": 8,
+    "nombre": "Urológico San Román",
+    "tipo": "Privado",
+    "direccion": "Calle Chivacoa, Urbanización San Román",
+    "geolocalizacion": {
+      "latitud": 10.4687,
+      "longitud": -66.8659
+    },
+    "telefono": "+58 212-9930122"
+  },
+  {
+    "id": 9,
+    "nombre": "Hospital General Dr. José Ignacio Baldó (El Algodonal)",
+    "tipo": "Público",
+    "direccion": "Avenida Intercomunal de Antímano, Parroquia Antímano",
+    "geolocalizacion": {
+      "latitud": 10.4695,
+      "longitud": -66.9602
+    },
+    "telefono": "No disponible públicamente"
+  },
+  {
+    "id": 10,
+    "nombre": "Clínica Sanatrix",
+    "tipo": "Privado",
+    "direccion": "Avenida 4, Urbanización Campo Alegre, Chacao",
+    "geolocalizacion": {
+      "latitud": 10.4941,
+      "longitud": -66.8550
+    },
+    "telefono": "+58 212-2014000"
+  },
+  {
+    "id": 11,
+    "nombre": "Hospital Dr. José María Vargas",
+    "tipo": "Público",
+    "direccion": "Esquina de Monte Carmelo, Parroquia San José",
+    "geolocalizacion": {
+      "latitud": 10.5135,
+      "longitud": -66.9123
+    },
+    "telefono": "+58 212-5628544"
+  },
+  {
+    "id": 12,
+    "nombre": "Hospital General Dr. Victorino Santaella Ruiz",
+    "tipo": "Público",
+    "direccion": "Avenida Bicentenario, Los Teques",
+    "geolocalizacion": {
+      "latitud": 10.3508,
+      "longitud": -67.0392
+    },
+    "telefono": "+58 212-3224126"
+  },
+  {
+    "id": 13,
+    "nombre": "Centro Médico Docente El Paso",
+    "tipo": "Privado",
+    "direccion": "Avenida Víctor Baptista, Los Teques",
+    "geolocalizacion": {
+      "latitud": 10.3562,
+      "longitud": -67.0441
+    },
+    "telefono": "+58 212-7005000"
+  },
+  {
+    "id": 14,
+    "nombre": "Centro Médico San Antonio",
+    "tipo": "Privado",
+    "direccion": "Avenida Perimetral, San Antonio de los Altos",
+    "geolocalizacion": {
+      "latitud": 10.3781,
+      "longitud": -66.9575
+    },
+    "telefono": "+58 212-3729111"
+  },
+  {
+    "id": 15,
+    "nombre": "Centro de Especialidades Médicas Los Altos (CEM Los Altos)",
+    "tipo": "Privado",
+    "direccion": "Avenida Sucre, Carrizal",
+    "geolocalizacion": {
+      "latitud": 10.3523,
+      "longitud": -66.9856
+    },
+    "telefono": "+58 212-3831222"
+  },
+  {
+    "id": 16,
+    "nombre": "Policlínica El Retiro",
+    "tipo": "Privado",
+    "direccion": "Urbanización El Retiro, San Antonio de los Altos",
+    "geolocalizacion": {
+      "latitud": 10.3802,
+      "longitud": -66.9592
+    },
+    "telefono": "+58 212-3725555"
+  },
+  {
+    "id": 17,
+    "nombre": "Clínica La Paz",
+    "tipo": "Privado",
+    "direccion": "Calle Roscio, Los Teques",
+    "geolocalizacion": {
+      "latitud": 10.3451,
+      "longitud": -67.0410
+    },
+    "telefono": "+58 212-3211111"
+  },
+  {
+    "id": 18,
+    "nombre": "Maternidad de Carrizal (Ambulatorio Especializado Carmen Rendiles)",
+    "tipo": "Público",
+    "direccion": "Calle Sucre, Casco Central de Carrizal",
+    "geolocalizacion": {
+      "latitud": 10.3510,
+      "longitud": -66.9875
+    },
+    "telefono": "No disponible públicamente"
+  },
+  {
+    "id": 19,
+    "nombre": "Hospital Dr. Luis Salazar Domínguez (IVSS Guarenas)",
+    "tipo": "Público",
+    "direccion": "Avenida Principal de Los Naranjos, Guarenas",
+    "geolocalizacion": {
+      "latitud": 10.4635,
+      "longitud": -66.6172
+    },
+    "telefono": "+58 212-3612222"
+  },
+  {
+    "id": 20,
+    "nombre": "Hospital General Dr. Francisco Rafael García",
+    "tipo": "Público",
+    "direccion": "Calle Comercio, cercano a la Plaza Bolívar, Guarenas",
+    "geolocalizacion": {
+      "latitud": 10.4581,
+      "longitud": -66.6125
+    },
+    "telefono": "No disponible públicamente"
+  },
+  {
+    "id": 21,
+    "nombre": "Hospital General Dr. Eugenio P. D'Bellard",
+    "tipo": "Público",
+    "direccion": "Sector El Vigía, Guatire",
+    "geolocalizacion": {
+      "latitud": 10.4742,
+      "longitud": -66.5411
+    },
+    "telefono": "No disponible públicamente"
+  },
+  {
+    "id": 22,
+    "nombre": "Clínica San Martín de Porres",
+    "tipo": "Privado",
+    "direccion": "Avenida Intercomunal Guarenas-Guatire, Sector El Marqués, Guatire",
+    "geolocalizacion": {
+      "latitud": 10.4705,
+      "longitud": -66.5458
+    },
+    "telefono": "+58 212-3413333"
+  },
+  {
+    "id": 23,
+    "nombre": "Centro Médico de Especialidades Guatire",
+    "tipo": "Privado",
+    "direccion": "Avenida Principal de Castillejo, Guatire",
+    "geolocalizacion": {
+      "latitud": 10.4750,
+      "longitud": -66.5540
+    },
+    "telefono": "+58 212-3445555"
+  },
+  {
+    "id": 24,
+    "nombre": "Policlínica Guatire",
+    "tipo": "Privado",
+    "direccion": "Calle Concepción con Calle Miranda, Casco Central, Guatire",
+    "geolocalizacion": {
+      "latitud": 10.4712,
+      "longitud": -66.5395
+    },
+    "telefono": "+58 212-3441122"
+  },
+  {
+    "id": 25,
+    "nombre": "Hospital General de los Valles del Tuy Simón Bolívar",
+    "tipo": "Público",
+    "direccion": "Avenida Miranda, Sector La Acequia, Ocumare del Tuy",
+    "geolocalizacion": {
+      "latitud": 10.1165,
+      "longitud": -66.7712
+    },
+    "telefono": "No disponible públicamente"
+  },
+  {
+    "id": 26,
+    "nombre": "Hospital Dr. Osío de Cúa",
+    "tipo": "Público",
+    "direccion": "Avenida Perimetral, Cúa",
+    "geolocalizacion": {
+      "latitud": 10.1584,
+      "longitud": -66.8841
+    },
+    "telefono": "No disponible públicamente"
+  },
+  {
+    "id": 27,
+    "nombre": "Centro Médico Paso Real",
+    "tipo": "Privado",
+    "direccion": "Autopista Charallave - Ocumare, Urb. Paso Real, Charallave",
+    "geolocalizacion": {
+      "latitud": 10.2301,
+      "longitud": -66.8587
+    },
+    "telefono": "+58 239-2481111"
+  },
+  {
+    "id": 28,
+    "nombre": "Hospital Santa Teresita de Jesús",
+    "tipo": "Público",
+    "direccion": "Avenida Alí Primera, Santa Teresa del Tuy",
+    "geolocalizacion": {
+      "latitud": 10.2335,
+      "longitud": -66.6641
+    },
+    "telefono": "No disponible públicamente"
+  },
+  {
+    "id": 29,
+    "nombre": "Policlínica Charallave",
+    "tipo": "Privado",
+    "direccion": "Avenida Bolívar, Casco Central, Charallave",
+    "geolocalizacion": {
+      "latitud": 10.2356,
+      "longitud": -66.8612
+    },
+    "telefono": "+58 239-2482222"
+  },
+  {
+    "id": 30,
+    "nombre": "Centro Médico Docente Tuy",
+    "tipo": "Privado",
+    "direccion": "Avenida Ribas, Ocumare del Tuy",
+    "geolocalizacion": {
+      "latitud": 10.1205,
+      "longitud": -66.7698
+    },
+    "telefono": "+58 239-2253333"
+  },
+  {
+    "id": 31,
+    "nombre": "Clínica La Candelaria",
+    "tipo": "Privado",
+    "direccion": "Calle Monseñor Pellín, Cúa",
+    "geolocalizacion": {
+      "latitud": 10.1611,
+      "longitud": -66.8865
+    },
+    "telefono": "+58 239-2124444"
+  },
+  {
+    "id": 32,
+    "nombre": "Hospital José María Benítez",
+    "tipo": "Público",
+    "direccion": "Avenida Las Delicias, La Victoria",
+    "geolocalizacion": {
+      "latitud": 10.2291,
+      "longitud": -67.3308
+    },
+    "telefono": "No disponible públicamente"
+  },
+  {
+    "id": 33,
+    "nombre": "Centro Clínico La Fontana (Clínica La Trinidad)",
+    "tipo": "Privado",
+    "direccion": "Avenida Francisco de Loreto, La Victoria",
+    "geolocalizacion": {
+      "latitud": 10.2272,
+      "longitud": -67.3292
+    },
+    "telefono": "+58 244-3221111"
+  },
+  {
+    "id": 34,
+    "nombre": "Hospital de Clínicas Aragua",
+    "tipo": "Privado",
+    "direccion": "Calle Juan Vicente Bolívar, La Victoria",
+    "geolocalizacion": {
+      "latitud": 10.2285,
+      "longitud": -67.3210
+    },
+    "telefono": "+58 244-3225555"
+  },
+  {
+    "id": 35,
+    "nombre": "Hospital Dr. José María Vargas (Hospitalito de Cagua)",
+    "tipo": "Público",
+    "direccion": "Calle Sabana Larga, Cagua",
+    "geolocalizacion": {
+      "latitud": 10.1834,
+      "longitud": -67.4589
+    },
+    "telefono": "No disponible públicamente"
+  },
+  {
+    "id": 36,
+    "nombre": "Centro Médico Cagua",
+    "tipo": "Privado",
+    "direccion": "Avenida Este Sabana Larga, Cagua",
+    "geolocalizacion": {
+      "latitud": 10.1815,
+      "longitud": -67.4590
+    },
+    "telefono": "+58 244-4478008"
+  },
+  {
+    "id": 37,
+    "nombre": "Policlínica Corinsa",
+    "tipo": "Privado",
+    "direccion": "Urbanización Corinsa, Cagua",
+    "geolocalizacion": {
+      "latitud": 10.1725,
+      "longitud": -67.4520
+    },
+    "telefono": "+58 244-3951111"
+  },
+  {
+    "id": 38,
+    "nombre": "Hospital Central de Maracay (HCM)",
+    "tipo": "Público",
+    "direccion": "Avenida Sucre, Urb. La Floresta, Maracay",
+    "geolocalizacion": {
+      "latitud": 10.2644,
+      "longitud": -67.5855
+    },
+    "telefono": "+58 243-2412211"
+  },
+  {
+    "id": 39,
+    "nombre": "Hospital Militar Coronel Elbano Paredes Vivas",
+    "tipo": "Público",
+    "direccion": "Avenida Las Delicias, Maracay",
+    "geolocalizacion": {
+      "latitud": 10.2798,
+      "longitud": -67.5849
+    },
+    "telefono": "+58 243-2321111"
+  },
+  {
+    "id": 40,
+    "nombre": "Centro Médico Maracay",
+    "tipo": "Privado",
+    "direccion": "Avenida Las Delicias, Maracay",
+    "geolocalizacion": {
+      "latitud": 10.2662,
+      "longitud": -67.5878
+    },
+    "telefono": "+58 243-2002100"
+  },
+  {
+    "id": 41,
+    "nombre": "Clínica Lugo",
+    "tipo": "Privado",
+    "direccion": "Calle Páez, Casco Central, Maracay",
+    "geolocalizacion": {
+      "latitud": 10.2458,
+      "longitud": -67.5956
+    },
+    "telefono": "+58 243-2456011"
+  },
+  {
+    "id": 42,
+    "nombre": "Ciudad Hospitalaria Dr. Enrique Tejera (CHET)",
+    "tipo": "Público",
+    "direccion": "Avenida Lisandro Alvarado, Valencia",
+    "geolocalizacion": {
+      "latitud": 10.1517,
+      "longitud": -68.0076
+    },
+    "telefono": "+58 241-8316661"
+  },
+  {
+    "id": 43,
+    "nombre": "Hospital Universitario Dr. Ángel Larralde (Hospital Carabobo)",
+    "tipo": "Público",
+    "direccion": "Vía Bárbula, Naguanagua, Valencia",
+    "geolocalizacion": {
+      "latitud": 10.2575,
+      "longitud": -68.0068
+    },
+    "telefono": "+58 241-8662222"
+  },
+  {
+    "id": 44,
+    "nombre": "Centro Policlínico Valencia (La Viña)",
+    "tipo": "Privado",
+    "direccion": "Avenida Carlos Sanda, Urbanización La Viña, Valencia",
+    "geolocalizacion": {
+      "latitud": 10.2115,
+      "longitud": -68.0150
+    },
+    "telefono": "+58 241-8236666"
+  },
+  {
+    "id": 45,
+    "nombre": "Clínica Guerra Méndez",
+    "tipo": "Privado",
+    "direccion": "Calle Rondón, Centro de Valencia",
+    "geolocalizacion": {
+      "latitud": 10.1776,
+      "longitud": -67.9981
+    },
+    "telefono": "+58 241-8571111"
+  },
+  {
+    "id": 46,
+    "nombre": "Hospital Metropolitano del Norte",
+    "tipo": "Privado",
+    "direccion": "Avenida 105, Sector Bárbula, Naguanagua, Valencia",
+    "geolocalizacion": {
+      "latitud": 10.2405,
+      "longitud": -68.0125
+    },
+    "telefono": "+58 241-8651111"
+  },
+  {
+    "id": 47,
+    "nombre": "Hospital Materno Infantil Dr. José María Vargas (Maternidad del Sur)",
+    "tipo": "Público",
+    "direccion": "Avenida Las Ferias, Valencia",
+    "geolocalizacion": {
+      "latitud": 10.1378,
+      "longitud": -68.0022
+    },
+    "telefono": "No disponible públicamente"
+  },
+  {
+    "id": 48,
+    "nombre": "Hospital Central Universitario Dr. Antonio María Pineda",
+    "tipo": "Público",
+    "direccion": "Avenida Vargas con Avenida Libertador, Barquisimeto",
+    "geolocalizacion": {
+      "latitud": 10.0673,
+      "longitud": -69.3085
+    },
+    "telefono": "+58 251-2523011"
+  },
+  {
+    "id": 49,
+    "nombre": "Hospital Pediátrico Dr. Agustín Zubillaga",
+    "tipo": "Público",
+    "direccion": "Avenida Vargas, al lado del Hospital Central, Barquisimeto",
+    "geolocalizacion": {
+      "latitud": 10.0681,
+      "longitud": -69.3092
+    },
+    "telefono": "+58 251-2512222"
+  },
+  {
+    "id": 50,
+    "nombre": "Clínica Acosta Ortiz",
+    "tipo": "Privado",
+    "direccion": "Carrera 19 entre calles 30 y 31, Centro de Barquisimeto",
+    "geolocalizacion": {
+      "latitud": 10.0635,
+      "longitud": -69.3174
+    },
+    "telefono": "+58 251-2315555"
+  },
+  {
+    "id": 51,
+    "nombre": "Policlínica Barquisimeto",
+    "tipo": "Privado",
+    "direccion": "Avenida Lara con Calle 1, Urbanización Nueva Segovia, Barquisimeto",
+    "geolocalizacion": {
+      "latitud": 10.0712,
+      "longitud": -69.2901
+    },
+    "telefono": "+58 251-2521111"
+  },
+  {
+    "id": 52,
+    "nombre": "Hospital General Dr. Israel Ranuárez Balza",
+    "tipo": "Público",
+    "direccion": "Avenida Simón Bolívar, San Juan de los Morros",
+    "geolocalizacion": {
+      "latitud": 9.9145,
+      "longitud": -67.3592
+    },
+    "telefono": "No disponible públicamente"
+  },
+  {
+    "id": 53,
+    "nombre": "Clínica Santa Bárbara",
+    "tipo": "Privado",
+    "direccion": "Avenida Los Llanos, San Juan de los Morros",
+    "geolocalizacion": {
+      "latitud": 9.9102,
+      "longitud": -67.3551
+    },
+    "telefono": "+58 246-4311111"
+  },
+  {
+    "id": 54,
+    "nombre": "Centro Médico Cedeño",
+    "tipo": "Privado",
+    "direccion": "Calle Cedeño, Casco Central, San Juan de los Morros",
+    "geolocalizacion": {
+      "latitud": 9.9078,
+      "longitud": -67.3534
+    },
+    "telefono": "+58 246-4312222"
+  },
+  {
+    "id": 55,
+    "nombre": "Hospital del IVSS Dr. Darío Vivas",
+    "tipo": "Público",
+    "direccion": "Avenida Fuerzas Armadas, San Juan de los Morros",
+    "geolocalizacion": {
+      "latitud": 9.9191,
+      "longitud": -67.3625
+    },
+    "telefono": "+58 246-4313333"
+  }
+]
