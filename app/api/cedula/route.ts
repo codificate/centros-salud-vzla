@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerToken } from "@/lib/api/auth";
-import { extractCedula } from "@/lib/genai/cedula";
+import { extractCedula, type CedulaData } from "@/lib/genai/cedula";
 import { verifyCedula, type CedulaVerification } from "@/lib/cedulave/verify";
 
 export const runtime = "nodejs";
@@ -32,23 +32,26 @@ export async function POST(req: Request) {
       { status: 400 }
     );
 
+  let data: CedulaData;
   try {
-    const data = await extractCedula(image, mimeType);
-
-    let verificacion: CedulaVerification | null = null;
-    if (data.cedula) {
-      try {
-        verificacion = await verifyCedula(data.cedula);
-      } catch {
-        // Verification is best-effort: keep OCR result even if it fails.
-      }
-    }
-
-    return NextResponse.json({ ...data, verificacion });
-  } catch {
+    data = await extractCedula(image, mimeType);
+  } catch (error) {
     return NextResponse.json(
       { error: "No se pudo procesar la imagen" },
       { status: 502 }
     );
   }
+
+  let verificacion: CedulaVerification | null = null;
+  const cedula = data.cedula?.trim();
+  if (cedula) {
+    try {
+      verificacion = await verifyCedula(cedula);
+    } catch (error) {
+      // Best-effort: keep OCR result even if verification fails.
+      console.error("verifyCedula failed:", error);
+    }
+  }
+
+  return NextResponse.json({ ...data, verificacion });
 }

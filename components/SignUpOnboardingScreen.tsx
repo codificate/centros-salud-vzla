@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { IconId } from "@tabler/icons-react";
 import { useSignUpFlow } from "@/components/providers/SignUpFlowProvider";
@@ -22,6 +22,26 @@ interface CedulaData {
 }
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png"];
+const WHITESPACE = /\s+/;
+
+/**
+ * Cross-check the ve-cedula verification against the Gemini OCR result:
+ *  - same cédula number, and
+ *  - at least one token of the official `nombre_completo` appears in the
+ *    OCR nombres/apellidos.
+ */
+function isCedulaMatch(data: CedulaData): boolean {
+  const verification = data.verificacion;
+  if (!verification || !data.cedula) return false;
+  if (verification.cedula !== data.cedula) return false;
+
+  const ocrNames = `${data.nombres ?? ""} ${data.apellidos ?? ""}`.toUpperCase();
+  return verification.nombre_completo
+    .toUpperCase()
+    .split(WHITESPACE)
+    .filter(Boolean)
+    .some((token) => ocrNames.includes(token));
+}
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -70,6 +90,11 @@ export default function SignUpOnboardingScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const verified = useMemo(
+    () => (cedulaData ? isCedulaMatch(cedulaData) : false),
+    [cedulaData]
+  );
+
   // No centro in memory (e.g. hard refresh) → bounce home.
   useEffect(() => {
     if (!centro) router.replace("/");
@@ -95,7 +120,8 @@ export default function SignUpOnboardingScreen() {
         body: JSON.stringify({ image: base64, mimeType: file.type }),
       });
       if (!res.ok) throw new Error();
-      setCedulaData((await res.json()) as CedulaData);
+      const response = await res.json()
+      setCedulaData((response) as CedulaData);
     } catch {
       setFileError("No se pudo leer la cédula. Probá otra foto.");
     } finally {
@@ -138,7 +164,7 @@ export default function SignUpOnboardingScreen() {
         />
       </div>
 
-      <div>
+      <div id="upload-photo-cedula">
         <input
           ref={fileInputRef}
           type="file"
@@ -179,6 +205,12 @@ export default function SignUpOnboardingScreen() {
         )}
       </div>
 
+      <div id="upload-photo-cedula-disclaimer">
+          <span className="text-sm font-medium text-slate-700">
+            Nota: Bajo ningún concepto, guardaremos, almacenaremos, o compartiremos con terceros la foto de tu documento de identidad. Entendemos lo importante que es esto para ti, así que por ahora solo necesitamos validar los datos que aparezcan en tu cédula.
+          </span>
+      </div>
+
       {cedulaData && (
         <dl className="rounded-lg border border-slate-200 bg-white p-4 text-sm">
           {(
@@ -199,26 +231,29 @@ export default function SignUpOnboardingScreen() {
       )}
 
       {cedulaData?.cedula &&
-        (cedulaData.verificacion ? (
+        (verified ? (
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm">
-            <p className="font-medium text-emerald-800">Cédula válida</p>
+            <p className="font-medium text-emerald-800">
+              Identidad verificada ✓
+            </p>
             <p className="mt-0.5 text-emerald-700">
-              {cedulaData.verificacion.nombre_completo}
+              {cedulaData.verificacion?.nombre_completo}
             </p>
           </div>
         ) : (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-            No se pudo validar la cédula.
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+            Los datos de la cédula no coinciden con la foto. Probá otra foto.
           </div>
         ))}
 
       {error && <p className="text-sm text-amber-700">{error}</p>}
 
       <button
+        id="complete-signup-button"
         type="button"
         onClick={submit}
-        disabled={isPending || extracting}
-        className="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-60"
+        disabled={isPending || extracting || !verified}
+        className="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending ? "Registrando…" : "Finalizar registro"}
       </button>
