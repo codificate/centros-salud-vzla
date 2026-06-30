@@ -1,6 +1,9 @@
 import "server-only";
 
-const RAW_BASE = "http://localhost:4000";
+const RAW_BASE = 
+  process.env.API_BASE_URL ??
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  "http://localhost:4000";
 
 export const API_BASE_URL = RAW_BASE.replace(/\/$/, "");
 
