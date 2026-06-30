@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { IconList, IconMap2 } from "@tabler/icons-react";
 import type { Centro } from "@/lib/centros";
+import { fetchCentros } from "@/app/actions/centros";
 import CentroDrawer from "@/components/CentroDrawer";
 import CentrosList from "@/components/CentrosList";
 
@@ -18,10 +19,22 @@ const CentrosMap = dynamic(() => import("@/components/CentrosMap"), {
 
 type View = "list" | "map";
 
-export default function CentrosClient({ centros }: { centros: Centro[] }) {
+export default function CentrosClient({
+  initialCentros = [],
+}: {
+  initialCentros?: Centro[];
+}) {
+  const [centros, setCentros] = useState<Centro[]>(initialCentros);
+  const [isPending, startTransition] = useTransition();
   const [query, setQuery] = useState("");
   const [view, setView] = useState<View>("list");
   const [active, setActive] = useState<Centro | null>(null);
+
+  useEffect(() => {
+    startTransition(async () => {
+      setCentros(await fetchCentros());
+    });
+  }, []);
 
   const normalized = useMemo(() => query.trim().toLowerCase(), [query]);
 
@@ -103,7 +116,11 @@ export default function CentrosClient({ centros }: { centros: Centro[] }) {
           <CentrosMap centros={filtered} onSelect={setActive} />
         ) : filtered.length === 0 ? (
           <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
-            Sin resultados
+            {isPending && centros.length === 0
+              ? "Cargando centros…"
+              : centros.length === 0
+                ? "No hay centros de salud registrados"
+                : "Sin resultados"}
           </div>
         ) : (
           <CentrosList centros={filtered} onSelect={setActive} />
