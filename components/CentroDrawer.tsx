@@ -62,7 +62,7 @@ export default function CentroDrawer({
   return (
     <div
       aria-hidden={!open}
-      className={`${open ? "pointer-events-auto" : "pointer-events-none"} fixed inset-0 z-40`}
+      className={`${open ? "pointer-events-auto" : "pointer-events-none"} fixed inset-0 z-[1100]`}
     >
       <div
         onClick={onClose}
