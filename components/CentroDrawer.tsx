@@ -1,13 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   IconFirstAidKit,
   IconUserPlus,
   IconArrowBearRight,
 } from "@tabler/icons-react";
 import type { Centro } from "@/lib/centros";
+import InsumosPanel from "@/components/InsumosPanel";
 
 const ACTIONS = [
   { key: "insumos", label: "Ver insumos", Icon: IconFirstAidKit },
@@ -46,7 +47,11 @@ export default function CentroDrawer({
 
   const open = centro !== null;
 
+  const [showInsumos, setShowInsumos] = useState(false);
+  useEffect(() => setShowInsumos(false), [centro?.id]);
+
   const handlers: Record<string, (() => void) | undefined> = {
+    insumos: () => setShowInsumos((v) => !v),
     llegar: centro
       ? () => {
           const dest = `${centro.geolocalizacion.latitud},${centro.geolocalizacion.longitud}`;
@@ -124,12 +129,16 @@ export default function CentroDrawer({
                     Teléfono
                   </dt>
                   <dd className="mt-1">
-                    <a
-                      href={`tel:${centro.telefono.replace(/\s|-/g, "")}`}
-                      className="text-sky-700 hover:underline"
-                    >
-                      {centro.telefono}
-                    </a>
+                    {centro.telefono ? (
+                      <a
+                        href={`tel:${centro.telefono.replace(/\s|-/g, "")}`}
+                        className="text-sky-700 hover:underline"
+                      >
+                        {centro.telefono}
+                      </a>
+                    ) : (
+                      <span className="text-slate-400">No disponible</span>
+                    )}
                   </dd>
                 </div>
                 <div>
@@ -144,20 +153,38 @@ export default function CentroDrawer({
               </dl>
 
               <div className="mt-4 grid grid-cols-3 gap-3">
-                {ACTIONS.map(({ key, label, Icon }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={handlers[key]}
-                    className="flex flex-col items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-4 text-center shadow-sm transition hover:border-sky-300 hover:shadow focus:outline-none focus:ring-2 focus:ring-sky-500/40"
-                  >
-                    <Icon className="h-7 w-7 text-sky-700" stroke={1.5} aria-hidden />
-                    <span className="text-xs font-medium text-slate-700">
-                      {label}
-                    </span>
-                  </button>
-                ))}
+                {ACTIONS.map(({ key, label, Icon }) => {
+                  const isInsumos = key === "insumos";
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={handlers[key]}
+                      aria-pressed={isInsumos ? showInsumos : undefined}
+                      aria-expanded={isInsumos ? showInsumos : undefined}
+                      className={`flex flex-col items-center justify-center gap-2 rounded-lg border px-2 py-4 text-center shadow-sm transition hover:border-sky-300 hover:shadow focus:outline-none focus:ring-2 focus:ring-sky-500/40 ${
+                        isInsumos && showInsumos
+                          ? "border-sky-400 bg-sky-50"
+                          : "border-slate-200 bg-white"
+                      }`}
+                    >
+                      <Icon className="h-7 w-7 text-sky-700" stroke={1.5} aria-hidden />
+                      <span className="text-xs font-medium text-slate-700">
+                        {label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
+
+              {showInsumos && (
+                <section className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
+                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Insumos
+                  </h3>
+                  <InsumosPanel centroId={centro.id} />
+                </section>
+              )}
             </>
           )}
         </div>

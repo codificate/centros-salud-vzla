@@ -40,7 +40,7 @@ export default function CentrosList({
               </div>
               <div className="flex gap-2">
                 <dt className="w-20 shrink-0 text-slate-500">Teléfono</dt>
-                <dd className="text-sky-700">{c.telefono}</dd>
+                <dd className="text-sky-700">{c.telefono ?? "—"}</dd>
               </div>
             </dl>
           </button>
