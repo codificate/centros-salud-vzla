@@ -9,7 +9,7 @@ import {
 } from "react";
 import { onIdTokenChanged, signOut, type User } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
-import { TOKEN_COOKIE } from "@/lib/firebase/cookie";
+import { setTokenCookie } from "@/lib/firebase/token";
 
 interface AuthState {
   user: User | null;
@@ -19,13 +19,6 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-function writeTokenCookie(token: string | null) {
-  const secure = location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = token
-    ? `${TOKEN_COOKIE}=${token}; path=/; max-age=3600; SameSite=Lax${secure}`
-    : `${TOKEN_COOKIE}=; path=/; max-age=0; SameSite=Lax${secure}`;
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Fires on sign-in, sign-out, and silent token refresh.
     return onIdTokenChanged(auth, async (next) => {
-      writeTokenCookie(next ? await next.getIdToken() : null);
+      setTokenCookie(next ? await next.getIdToken() : null);
       setUser(next);
       setLoading(false);
     });
