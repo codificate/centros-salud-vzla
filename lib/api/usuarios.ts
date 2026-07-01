@@ -22,3 +22,9 @@ export async function signUp(
     json: { centro_id: centroId, mpps },
   });
 }
+
+/** Abort the sign-up: the backend deletes the Firebase user. */
+export async function abortSignUp(): Promise<void> {
+  const token = await requireServerToken();
+  await apiFetch<void>(endpoints.abortSignUp, { method: "DELETE", token });
+}

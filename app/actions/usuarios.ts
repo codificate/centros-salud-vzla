@@ -1,6 +1,6 @@
 "use server";
 
-import { signIn, signUp } from "@/lib/api/usuarios";
+import { signIn, signUp, abortSignUp } from "@/lib/api/usuarios";
 import { ApiError } from "@/lib/api/http";
 import type { UserResponse } from "@/lib/api/types";
 
@@ -38,5 +38,18 @@ export async function signUpAction(
     if (e instanceof ApiError && e.status === 409)
       return { ok: false, error: "Ya existe una cuenta para este usuario." };
     return { ok: false, error: "No se pudo completar el registro." };
+  }
+}
+
+export type AbortSignUpResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+export async function abortSignUpAction(): Promise<AbortSignUpResult> {
+  try {
+    await abortSignUp();
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "No se pudo cancelar el registro." };
   }
 }
