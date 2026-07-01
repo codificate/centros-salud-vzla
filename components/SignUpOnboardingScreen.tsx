@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { IconId } from "@tabler/icons-react";
 import { useSignUpFlow } from "@/components/providers/SignUpFlowProvider";
 import { signUpAction } from "@/app/actions/usuarios";
+import { fetchCentros } from "@/app/actions/centros";
+import type { Centro } from "@/lib/centros";
 
 interface CedulaVerification {
   nacionalidad: string;
@@ -79,7 +81,7 @@ function Spinner() {
 
 export default function SignUpOnboardingScreen() {
   const router = useRouter();
-  const { centro } = useSignUpFlow();
+  const { centro, setCentro } = useSignUpFlow();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [mpps, setMpps] = useState("");
@@ -94,13 +96,6 @@ export default function SignUpOnboardingScreen() {
     () => (cedulaData ? isCedulaMatch(cedulaData) : false),
     [cedulaData]
   );
-
-  // No centro in memory (e.g. hard refresh) → bounce home.
-  useEffect(() => {
-    if (!centro) router.replace("/");
-  }, [centro, router]);
-
-  if (!centro) return null;
 
   const onSelectFile = async (file?: File) => {
     if (!file) return;
@@ -130,9 +125,11 @@ export default function SignUpOnboardingScreen() {
   };
 
   const submit = () => {
+    if (!centro) return;
     setError(null);
+    const centroId = centro.id;
     startTransition(async () => {
-      const res = await signUpAction(centro.id, mpps ? Number(mpps) : 0);
+      const res = await signUpAction(centroId, mpps ? Number(mpps) : 0);
       if (res.ok) router.replace("/dashboard");
       else setError(res.error);
     });
@@ -144,8 +141,12 @@ export default function SignUpOnboardingScreen() {
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">
           Continua con tu registro
         </h1>
-        <p className="mt-1 text-sm text-slate-600">{centro.nombre}</p>
+        <p className="mt-1 text-sm text-slate-600">
+          {centro?.nombre ?? "Seleccioná tu centro para continuar"}
+        </p>
       </header>
+
+      {!centro && <CentroAutocomplete onPick={setCentro} />}
 
       <div>
         <label
@@ -252,11 +253,85 @@ export default function SignUpOnboardingScreen() {
         id="complete-signup-button"
         type="button"
         onClick={submit}
-        disabled={isPending || extracting || !verified}
+        disabled={isPending || extracting || !verified || !centro}
         className="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending ? "Registrando…" : "Finalizar registro"}
       </button>
     </main>
+  );
+}
+
+function CentroAutocomplete({ onPick }: { onPick: (centro: Centro) => void }) {
+  const [centros, setCentros] = useState<Centro[]>([]);
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetchCentros().then((data) => {
+      if (active) setCentros(data);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return centros
+      .filter((c) => c.nombre.toLowerCase().includes(q))
+      .slice(0, 8);
+  }, [centros, query]);
+
+  return (
+    <div className="relative">
+      <label
+        htmlFor="centro-search"
+        className="block text-sm font-medium text-slate-700"
+      >
+        Centro
+      </label>
+      <input
+        id="centro-search"
+        type="text"
+        role="combobox"
+        aria-expanded={open && suggestions.length > 0}
+        aria-autocomplete="list"
+        autoComplete="off"
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        placeholder="Buscá tu centro…"
+        className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
+      />
+      {open && suggestions.length > 0 && (
+        <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+          {suggestions.map((c) => (
+            <li key={c.id}>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  onPick(c);
+                  setQuery(c.nombre);
+                  setOpen(false);
+                }}
+                className="block w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
+              >
+                <span className="font-medium text-slate-900">{c.nombre}</span>
+                <span className="mt-0.5 block truncate text-xs text-slate-500">
+                  {c.direccion}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

@@ -2,20 +2,24 @@
 
 import { useState } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useSignupFlow } from "@/components/hooks/useSignupFlow";
 import { signInWithGoogle } from "@/lib/firebase/google";
+import SignupGoogleDialog from "@/components/SignupGoogleDialog";
 
 export default function Navbar() {
   const { user, loading, logout } = useAuth();
-  const [busy, setBusy] = useState(false);
+  const { askGoogle, busy, error, start, confirmGoogle, cancelGoogle } =
+    useSignupFlow();
+  const [loginBusy, setLoginBusy] = useState(false);
 
-  const signIn = async () => {
-    setBusy(true);
+  const login = async () => {
+    setLoginBusy(true);
     try {
       await signInWithGoogle();
     } catch {
       // user closed the popup / sign-in failed — no-op
     } finally {
-      setBusy(false);
+      setLoginBusy(false);
     }
   };
 
@@ -30,6 +34,11 @@ export default function Navbar() {
         </span>
 
         <div className="flex items-center gap-2">
+          {error && (
+            <span className="hidden text-xs text-amber-700 sm:inline">
+              {error}
+            </span>
+          )}
           {loading ? null : user ? (
             <>
               <span className="hidden max-w-[10rem] truncate text-sm text-slate-600 sm:inline">
@@ -46,16 +55,18 @@ export default function Navbar() {
           ) : (
             <>
               <button
+                id="sign-in-button"
                 type="button"
-                onClick={signIn}
-                disabled={busy}
+                onClick={login}
+                disabled={loginBusy}
                 className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/40 disabled:opacity-60"
               >
                 Login
               </button>
               <button
+                id="sign-up-button"
                 type="button"
-                onClick={signIn}
+                onClick={() => start()}
                 disabled={busy}
                 className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500/40 disabled:opacity-60"
               >
@@ -65,6 +76,13 @@ export default function Navbar() {
           )}
         </div>
       </div>
+
+      <SignupGoogleDialog
+        open={askGoogle}
+        busy={busy}
+        onConfirm={() => confirmGoogle()}
+        onCancel={cancelGoogle}
+      />
     </nav>
   );
 }

@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   IconFirstAidKit,
   IconUserPlus,
@@ -10,10 +9,8 @@ import {
 } from "@tabler/icons-react";
 import type { Centro } from "@/lib/centros";
 import InsumosPanel from "@/components/InsumosPanel";
-import { useAuth } from "@/components/providers/AuthProvider";
-import { useSignUpFlow } from "@/components/providers/SignUpFlowProvider";
-import { signInAction } from "@/app/actions/usuarios";
-import { signInWithGoogle } from "@/lib/firebase/google";
+import SignupGoogleDialog from "@/components/SignupGoogleDialog";
+import { useSignupFlow } from "@/components/hooks/useSignupFlow";
 
 const ACTIONS = [
   { key: "insumos", label: "Ver insumos", Icon: IconFirstAidKit },
@@ -52,62 +49,19 @@ export default function CentroDrawer({
 
   const open = centro !== null;
 
-  const router = useRouter();
-  const { user } = useAuth();
-  const { setCentro } = useSignUpFlow();
+  const { askGoogle, busy, error: flowError, start, confirmGoogle, cancelGoogle, reset } =
+    useSignupFlow();
 
   const [showInsumos, setShowInsumos] = useState(false);
-  const [askGoogle, setAskGoogle] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [flowError, setFlowError] = useState<string | null>(null);
 
   useEffect(() => {
     setShowInsumos(false);
-    setAskGoogle(false);
-    setFlowError(null);
-  }, [centro?.id]);
-
-  const goOnboarding = (target: Centro) => {
-    setCentro(target); // persist selected centro across navigation
-    onClose();
-    router.push("/onboarding");
-  };
-
-  const startTrabajo = async (target: Centro) => {
-    setCentro(target);
-    setFlowError(null);
-    if (!user) {
-      setAskGoogle(true);
-      return;
-    }
-    setBusy(true);
-    const res = await signInAction();
-    setBusy(false);
-    if (res.status === "exists" || res.status === "not_found")
-      goOnboarding(target);
-    else if (res.status === "unauthenticated") setAskGoogle(true);
-    else setFlowError(res.message);
-  };
-
-  const confirmGoogle = async () => {
-    if (!centro) return;
-    setAskGoogle(false);
-    setBusy(true);
-    setFlowError(null);
-    try {
-      await signInWithGoogle(); // account chooser + persist token
-      await signInAction(); // refresh session now that token cookie is set
-      goOnboarding(centro);
-    } catch {
-      setFlowError("No se pudo iniciar con Google.");
-    } finally {
-      setBusy(false);
-    }
-  };
+    reset();
+  }, [centro?.id, reset]);
 
   const handlers: Record<string, (() => void) | undefined> = {
     insumos: () => setShowInsumos((v) => !v),
-    trabajo: centro ? () => startTrabajo(centro) : undefined,
+    trabajo: centro ? () => start(centro) : undefined,
     llegar: centro
       ? () => {
           const dest = `${centro.geolocalizacion.latitud},${centro.geolocalizacion.longitud}`;
@@ -281,44 +235,12 @@ export default function CentroDrawer({
         </button>
       </aside>
 
-      {askGoogle && (
-        <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-slate-900/50"
-            onClick={() => setAskGoogle(false)}
-          />
-          <div
-            role="alertdialog"
-            aria-modal="true"
-            aria-label="Crear cuenta"
-            className="relative w-full max-w-sm rounded-lg bg-white p-5 shadow-xl"
-          >
-            <h3 className="text-base font-semibold text-slate-900">
-              Crear cuenta
-            </h3>
-            <p className="mt-2 text-sm text-slate-600">
-              ¿Querés crear una cuenta con tu cuenta de Google?
-            </p>
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setAskGoogle(false)}
-                className="rounded-md px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={confirmGoogle}
-                disabled={busy}
-                className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700 disabled:opacity-60"
-              >
-                Ok
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SignupGoogleDialog
+        open={askGoogle}
+        busy={busy}
+        onConfirm={() => confirmGoogle(centro)}
+        onCancel={cancelGoogle}
+      />
     </div>
   );
 }
