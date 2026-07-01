@@ -133,7 +133,7 @@ export default function SignUpOnboardingScreen() {
     setError(null);
     startTransition(async () => {
       const res = await signUpAction(centro.id, mpps ? Number(mpps) : 0);
-      if (res.ok) router.replace("/");
+      if (res.ok) router.replace("/dashboard");
       else setError(res.error);
     });
   };

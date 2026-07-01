@@ -7,6 +7,7 @@ import type { Centro } from "@/lib/centros";
 import { fetchCentros } from "@/app/actions/centros";
 import CentroDrawer from "@/components/CentroDrawer";
 import CentrosList from "@/components/CentrosList";
+import Navbar from "@/components/Navbar";
 
 const CentrosMap = dynamic(() => import("@/components/CentrosMap"), {
   ssr: false,
@@ -50,6 +51,7 @@ export default function CentrosClient({
 
   return (
     <>
+      <Navbar />
       <main className="mx-auto max-w-3xl px-4 py-8">
         <header className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
