@@ -4,9 +4,11 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { IconId } from "@tabler/icons-react";
 import { useSignUpFlow } from "@/components/providers/SignUpFlowProvider";
-import { signUpAction } from "@/app/actions/usuarios";
-import { fetchCentros } from "@/app/actions/centros";
-import type { Centro } from "@/lib/centros";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { signUpAction, abortSignUpAction } from "@/app/actions/usuarios";
+import { setTokenCookie } from "@/lib/firebase/token";
+import ExitConfirmDialog from "@/components/ExitConfirmDialog";
+import CentroAutocomplete from "@/components/CentroAutocomplete";
 
 interface CedulaVerification {
   nacionalidad: string;
@@ -82,6 +84,7 @@ function Spinner() {
 export default function SignUpOnboardingScreen() {
   const router = useRouter();
   const { centro, setCentro } = useSignUpFlow();
+  const { logout } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [mpps, setMpps] = useState("");
@@ -90,12 +93,52 @@ export default function SignUpOnboardingScreen() {
   const [extracting, setExtracting] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmExitOpen, setConfirmExitOpen] = useState(false);
+  const [exiting, setExiting] = useState(false);
+  const [exitError, setExitError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const verified = useMemo(
     () => (cedulaData ? isCedulaMatch(cedulaData) : false),
     [cedulaData]
   );
+
+  // Intercept the browser back button to confirm leaving the flow.
+  useEffect(() => {
+    window.history.pushState(null, "", window.location.href);
+    const onPopState = () => {
+      setConfirmExitOpen(true);
+      window.history.pushState(null, "", window.location.href);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  // Warn on tab close / reload (native prompt; text is browser-controlled).
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, []);
+
+  const confirmExit = async () => {
+    setExitError(null);
+    setExiting(true);
+    // DELETE first (needs the token): backend deletes the Firebase user.
+    const res = await abortSignUpAction();
+    if (!res.ok) {
+      setExitError(res.error);
+      setExiting(false);
+      return;
+    }
+    // Only after 200: sign out, clear the cookie, leave.
+    await logout(); // Firebase signOut
+    setTokenCookie(null); // clear the auth token cookie
+    router.replace("/");
+  };
 
   const onSelectFile = async (file?: File) => {
     if (!file) return;
@@ -146,7 +189,7 @@ export default function SignUpOnboardingScreen() {
         </p>
       </header>
 
-      {!centro && <CentroAutocomplete onPick={setCentro} />}
+      <CentroAutocomplete selectedName={centro?.nombre ?? ""} onPick={setCentro} />
 
       <div>
         <label
@@ -258,80 +301,18 @@ export default function SignUpOnboardingScreen() {
       >
         {isPending ? "Registrando…" : "Finalizar registro"}
       </button>
-    </main>
-  );
-}
 
-function CentroAutocomplete({ onPick }: { onPick: (centro: Centro) => void }) {
-  const [centros, setCentros] = useState<Centro[]>([]);
-  const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    fetchCentros().then((data) => {
-      if (active) setCentros(data);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const suggestions = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return centros
-      .filter((c) => c.nombre.toLowerCase().includes(q))
-      .slice(0, 8);
-  }, [centros, query]);
-
-  return (
-    <div className="relative">
-      <label
-        htmlFor="centro-search"
-        className="block text-sm font-medium text-slate-700"
-      >
-        Centro
-      </label>
-      <input
-        id="centro-search"
-        type="text"
-        role="combobox"
-        aria-expanded={open && suggestions.length > 0}
-        aria-autocomplete="list"
-        autoComplete="off"
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
+      <ExitConfirmDialog
+        open={confirmExitOpen}
+        busy={exiting}
+        error={exitError}
+        onConfirm={confirmExit}
+        onCancel={() => {
+          if (exiting) return;
+          setExitError(null);
+          setConfirmExitOpen(false);
         }}
-        onFocus={() => setOpen(true)}
-        placeholder="Buscá tu centro…"
-        className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
       />
-      {open && suggestions.length > 0 && (
-        <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-slate-200 bg-white shadow-lg">
-          {suggestions.map((c) => (
-            <li key={c.id}>
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  onPick(c);
-                  setQuery(c.nombre);
-                  setOpen(false);
-                }}
-                className="block w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
-              >
-                <span className="font-medium text-slate-900">{c.nombre}</span>
-                <span className="mt-0.5 block truncate text-xs text-slate-500">
-                  {c.direccion}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    </main>
   );
 }
