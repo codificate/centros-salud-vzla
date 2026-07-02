@@ -30,6 +30,10 @@ export async function verifyCedula(
     next: { revalidate: 86400 },
   });
 
+  console.log(url)
+  console.log(apiKey)
+  console.log(res.status)
+
   if (res.status === 404) return null;
   if (res.status === 401)
     throw new Error("ve-cedula: invalid API key (NEXT_CEDULA_VE_API_KEY)");
