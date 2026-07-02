@@ -13,7 +13,8 @@ export async function fetchInsumosAction(
   centroId: number
 ): Promise<ActionResult<InsumosResponse>> {
   try {
-    return { ok: true, data: await getInsumosByCentro(centroId) };
+    const { data } = await getInsumosByCentro(centroId);
+    return { ok: true, data };
   } catch (e) {
     return { ok: false, error: toMessage(e) };
   }
@@ -24,7 +25,7 @@ export async function createInsumosAction(
   insumos: InsumoItem[]
 ): Promise<ActionResult<InsumosResponse>> {
   try {
-    const data = await createInsumos(centro, insumos);
+    const { data } = await createInsumos(centro, insumos);
     revalidateTag(`insumos:${centro}`);
     return { ok: true, data };
   } catch (e) {

@@ -12,7 +12,8 @@ export type SignInResult =
 
 export async function signInAction(): Promise<SignInResult> {
   try {
-    return { status: "exists", user: await signIn() };
+    const { data } = await signIn();
+    return { status: "exists", user: data };
   } catch (e) {
     if (e instanceof ApiError) {
       if (e.status === 404) return { status: "not_found" };
@@ -34,8 +35,8 @@ export async function signUpAction(
   cedula: string
 ): Promise<SignUpResult> {
   try {
-    const response = await signUp(centroId, mpps, cedula)
-    return { ok: true, user: response };
+    const { data } = await signUp(centroId, mpps, cedula);
+    return { ok: true, user: data };
   } catch (e) {
     if (e instanceof ApiError)
       return { ok: false, error: e.message };

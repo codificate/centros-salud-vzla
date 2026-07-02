@@ -2,12 +2,12 @@ import "server-only";
 import { apiFetch } from "./http";
 import { endpoints } from "./config";
 import { requireServerToken } from "./auth";
-import type { UserResponse } from "./types";
+import type { UserResponse, Paginated } from "./types";
 
 /** Return the stored user for the current Firebase token. */
-export async function signIn(): Promise<UserResponse> {
+export async function signIn(): Promise<Paginated<UserResponse>> {
   const token = await requireServerToken();
-  return apiFetch<UserResponse>(endpoints.signIn, { token });
+  return apiFetch<Paginated<UserResponse>>(endpoints.signIn, { token });
 }
 
 /** Register the current user and assign a centro. */
@@ -15,9 +15,9 @@ export async function signUp(
   centroId: number,
   mpps: number,
   cedula: string
-): Promise<UserResponse> {
+): Promise<Paginated<UserResponse>> {
   const token = await requireServerToken();
-  return apiFetch<UserResponse>(endpoints.signUp, {
+  return apiFetch<Paginated<UserResponse>>(endpoints.signUp, {
     method: "POST",
     token,
     json: { centro_id: centroId, mpps, cedula: cedula },

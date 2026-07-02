@@ -197,7 +197,7 @@ export default function SignUpOnboardingScreen() {
           htmlFor="mpps"
           className="block text-sm font-medium text-slate-700"
         >
-          N° MPPS: (opcional)
+          N° MPPS:
         </label>
         <input
           id="mpps"
@@ -300,7 +300,7 @@ export default function SignUpOnboardingScreen() {
         disabled={isPending || extracting || !verified || !centro}
         className="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isPending ? "Registrando…" : "Finalizar registro"}
+        {isPending ? "Registrando…" : "Confirmar registro"}
       </button>
 
       <ExitConfirmDialog
