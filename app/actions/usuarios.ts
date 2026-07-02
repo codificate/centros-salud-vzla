@@ -37,8 +37,8 @@ export async function signUpAction(
     const response = await signUp(centroId, mpps, cedula)
     return { ok: true, user: response };
   } catch (e) {
-    if (e instanceof ApiError && e.status === 409)
-      return { ok: false, error: "Ya existe una cuenta para este usuario." };
+    if (e instanceof ApiError)
+      return { ok: false, error: e.message };
     return { ok: false, error: "No se pudo completar el registro." };
   }
 }

@@ -33,7 +33,7 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const body = await res.json().catch(() => undefined);
-    throw new ApiError(res.status, `${init.method ?? "GET"} ${path} → ${res.status}`, body);
+    throw new ApiError(res.status, body.detail ?? "Error desconocido", body);
   }
 
   if (res.status === 204) return undefined as T;
