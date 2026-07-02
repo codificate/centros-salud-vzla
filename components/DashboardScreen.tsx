@@ -102,9 +102,6 @@ export default function DashboardScreen() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Panel
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            {user.displayName ?? user.email}
-          </p>
         </header>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">

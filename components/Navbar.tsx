@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useSignupFlow } from "@/components/hooks/useSignupFlow";
 import { signInWithGoogle } from "@/lib/firebase/google";
 import SignupGoogleDialog from "@/components/SignupGoogleDialog";
 
 export default function Navbar() {
+  const router = useRouter();
   const { user, loading, logout } = useAuth();
   const { askGoogle, busy, error, start, confirmGoogle, cancelGoogle } =
     useSignupFlow();
@@ -15,7 +17,8 @@ export default function Navbar() {
   const login = async () => {
     setLoginBusy(true);
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(); // popup + persists token cookie
+      router.push("/dashboard");
     } catch {
       // user closed the popup / sign-in failed — no-op
     } finally {
