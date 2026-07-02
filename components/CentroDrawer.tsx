@@ -9,6 +9,8 @@ import {
 } from "@tabler/icons-react";
 import type { Centro } from "@/lib/centros";
 import InsumosPanel from "@/components/InsumosPanel";
+import SignupGoogleDialog from "@/components/SignupGoogleDialog";
+import { useSignupFlow } from "@/components/hooks/useSignupFlow";
 
 const ACTIONS = [
   { key: "insumos", label: "Ver insumos", Icon: IconFirstAidKit },
@@ -47,11 +49,19 @@ export default function CentroDrawer({
 
   const open = centro !== null;
 
+  const { askGoogle, busy, error: flowError, start, confirmGoogle, cancelGoogle, reset } =
+    useSignupFlow();
+
   const [showInsumos, setShowInsumos] = useState(false);
-  useEffect(() => setShowInsumos(false), [centro?.id]);
+
+  useEffect(() => {
+    setShowInsumos(false);
+    reset();
+  }, [centro?.id, reset]);
 
   const handlers: Record<string, (() => void) | undefined> = {
     insumos: () => setShowInsumos((v) => !v),
+    trabajo: centro ? () => start(centro) : undefined,
     llegar: centro
       ? () => {
           const dest = `${centro.geolocalizacion.latitud},${centro.geolocalizacion.longitud}`;
@@ -160,9 +170,10 @@ export default function CentroDrawer({
                       key={key}
                       type="button"
                       onClick={handlers[key]}
+                      disabled={busy}
                       aria-pressed={isInsumos ? showInsumos : undefined}
                       aria-expanded={isInsumos ? showInsumos : undefined}
-                      className={`flex flex-col items-center justify-center gap-2 rounded-lg border px-2 py-4 text-center shadow-sm transition hover:border-sky-300 hover:shadow focus:outline-none focus:ring-2 focus:ring-sky-500/40 ${
+                      className={`flex flex-col items-center justify-center gap-2 rounded-lg border px-2 py-4 text-center shadow-sm transition hover:border-sky-300 hover:shadow focus:outline-none focus:ring-2 focus:ring-sky-500/40 disabled:opacity-60 ${
                         isInsumos && showInsumos
                           ? "border-sky-400 bg-sky-50"
                           : "border-slate-200 bg-white"
@@ -176,6 +187,10 @@ export default function CentroDrawer({
                   );
                 })}
               </div>
+
+              {flowError && (
+                <p className="mt-3 text-sm text-amber-700">{flowError}</p>
+              )}
 
               {showInsumos && (
                 <section className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
@@ -219,6 +234,13 @@ export default function CentroDrawer({
           </svg>
         </button>
       </aside>
+
+      <SignupGoogleDialog
+        open={askGoogle}
+        busy={busy}
+        onConfirm={() => confirmGoogle(centro)}
+        onCancel={cancelGoogle}
+      />
     </div>
   );
 }

@@ -13,12 +13,19 @@ export async function signIn(): Promise<UserResponse> {
 /** Register the current user and assign a centro. */
 export async function signUp(
   centroId: number,
-  mpps: number
+  mpps: number,
+  cedula: string
 ): Promise<UserResponse> {
   const token = await requireServerToken();
   return apiFetch<UserResponse>(endpoints.signUp, {
     method: "POST",
     token,
-    json: { centro_id: centroId, mpps },
+    json: { centro_id: centroId, mpps, cedula: cedula },
   });
+}
+
+/** Abort the sign-up: the backend deletes the Firebase user. */
+export async function abortSignUp(): Promise<void> {
+  const token = await requireServerToken();
+  await apiFetch<void>(endpoints.abortSignUp, { method: "DELETE", token });
 }

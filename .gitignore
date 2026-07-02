@@ -1,3 +1,4 @@
+.claude
 node_modules
 .next
 out
@@ -9,3 +10,4 @@ next-env.d.ts
 .vercel
 *.tsbuildinfo
 **/serviceAccount.json
+package-lock.json
