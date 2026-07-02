@@ -16,13 +16,9 @@ export default function CentroAutocomplete({
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    let active = true;
-    fetchCentros().then((data) => {
-      if (active) setCentros(data);
-    });
-    return () => {
-      active = false;
-    };
+    fetchCentros()
+      .then(setCentros)
+      .catch(() => setCentros([]));
   }, []);
 
   const suggestions = useMemo(() => {

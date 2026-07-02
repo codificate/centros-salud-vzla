@@ -168,11 +168,12 @@ export default function SignUpOnboardingScreen() {
   };
 
   const submit = () => {
-    if (!centro) return;
+    const cedula = cedulaData?.cedula;
+    if (!centro || !cedula) return;
     setError(null);
     const centroId = centro.id;
     startTransition(async () => {
-      const res = await signUpAction(centroId, mpps ? Number(mpps) : 0);
+      const res = await signUpAction(centroId, mpps ? Number(mpps) : 0, cedula);
       if (res.ok) router.replace("/dashboard");
       else setError(res.error);
     });

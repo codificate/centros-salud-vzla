@@ -30,10 +30,12 @@ export type SignUpResult =
 
 export async function signUpAction(
   centroId: number,
-  mpps: number
+  mpps: number,
+  cedula: string
 ): Promise<SignUpResult> {
   try {
-    return { ok: true, user: await signUp(centroId, mpps) };
+    const response = await signUp(centroId, mpps, cedula)
+    return { ok: true, user: response };
   } catch (e) {
     if (e instanceof ApiError && e.status === 409)
       return { ok: false, error: "Ya existe una cuenta para este usuario." };

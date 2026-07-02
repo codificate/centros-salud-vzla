@@ -33,6 +33,7 @@ export interface InsumosResponse {
 export interface SignUpRequest {
   centro_id: number;
   mpps: number;
+  cedula: string;
 }
 
 export interface UserResponse {
