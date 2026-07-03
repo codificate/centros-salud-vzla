@@ -5,54 +5,30 @@ import {
   useEffect,
   useMemo,
   useState,
+  useTransition,
   type FormEvent,
 } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import Navbar from "@/components/Navbar";
-import type { Centro } from "@/lib/api/types";
-
-interface Insumo {
-  descripcion: string;
-  cantidad: number;
-}
+import CentroAutocomplete from "@/components/CentroAutocomplete";
+import UserCentroAssociated from "@/components/UserCentroAssociated";
+import CentroInsumoItem from "@/components/CentroInsumoItem";
+import {
+  listUserCentrosAction,
+  addCentroAction,
+  removeCentroAction,
+} from "@/app/actions/usuarios";
+import {
+  fetchInsumosAction,
+  createInsumosAction,
+} from "@/app/actions/insumos";
+import type { Centro, InsumoItem, InsumoResponseItem } from "@/lib/api/types";
 
 interface CentroUser {
   nombre: string;
   mpps?: number;
 }
-
-// TODO: replace mock data with API calls (centros/insumos/usuarios).
-const MOCK_CENTROS: Centro[] = [
-  {
-    id: 1,
-    nombre: "Hospital Universitario de Caracas",
-    tipo: "Público",
-    direccion: "Ciudad Universitaria, Caracas",
-    telefono: "0212-6053111",
-    geolocalizacion: { latitud: 10.49, longitud: -66.89 },
-  },
-  {
-    id: 2,
-    nombre: "Centro Médico Docente La Trinidad",
-    tipo: "Privado",
-    direccion: "La Trinidad, Caracas",
-    telefono: "0212-9496411",
-    geolocalizacion: { latitud: 10.42, longitud: -66.84 },
-  },
-];
-
-const MOCK_INSUMOS: Insumo[] = [
-  { descripcion: "Guantes quirúrgicos", cantidad: 120 },
-  { descripcion: "Jeringas 5ml", cantidad: 300 },
-];
-
-const MOCK_USERS: CentroUser[] = [
-  { nombre: "María Rodríguez", mpps: 12345 },
-  { nombre: "José Pérez", mpps: 67890 },
-];
-
-const NORMALIZE = (value: string) => value.trim().toLowerCase();
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -63,27 +39,76 @@ export default function DashboardScreen() {
     if (!loading && !user) router.replace("/");
   }, [loading, user, router]);
 
-  const [centros] = useState<Centro[]>(MOCK_CENTROS);
-  const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<number | null>(
-    MOCK_CENTROS[0]?.id ?? null,
-  );
-  const [insumos, setInsumos] = useState<Insumo[]>(MOCK_INSUMOS);
-  const [users] = useState<CentroUser[]>(MOCK_USERS);
+  const [associated, setAssociated] = useState<Centro[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [removingId, setRemovingId] = useState<number | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [insumos, setInsumos] = useState<InsumoResponseItem[]>([]);
+  const [insumosLoading, setInsumosLoading] = useState(false);
+  const [addingInsumo, startInsumoTransition] = useTransition();
 
-  const filteredCentros = useMemo(() => {
-    const q = NORMALIZE(query);
-    if (!q) return centros;
-    return centros.filter((c) => NORMALIZE(c.nombre).includes(q));
-  }, [centros, query]);
+  useEffect(() => {
+    listUserCentrosAction().then((r) => {
+      if (r.ok) setAssociated(r.centros);
+    });
+  }, []);
 
   const selectedCentro = useMemo(
-    () => centros.find((c) => c.id === selectedId) ?? null,
-    [centros, selectedId],
+    () => associated.find((c) => c.id === selectedId) ?? associated[0] ?? null,
+    [associated, selectedId],
   );
 
-  const addInsumo = useCallback((insumo: Insumo) => {
-    setInsumos((prev) => [insumo, ...prev]);
+  const selectedCentroId = selectedCentro?.id ?? null;
+
+  // Load insumos for the first/selected centro; server-cached per centro.
+  useEffect(() => {
+    if (selectedCentroId == null) {
+      setInsumos([]);
+      return;
+    }
+    let active = true;
+    setInsumosLoading(true);
+    fetchInsumosAction(selectedCentroId)
+      .then((r) => {
+        if (active) setInsumos(r.ok ? r.data.insumos : []);
+      })
+      .finally(() => {
+        if (active) setInsumosLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedCentroId]);
+
+  const handleAddInsumo = useCallback(
+    (item: InsumoItem) => {
+      if (selectedCentroId == null) return;
+      startInsumoTransition(async () => {
+        const r = await createInsumosAction(selectedCentroId, [item]);
+        if (r.ok) setInsumos(r.data.insumos);
+      });
+    },
+    [selectedCentroId],
+  );
+
+  const handleAdd = useCallback(
+    (centro: Centro) => {
+      if (associated.some((c) => c.id === centro.id)) return;
+      startTransition(async () => {
+        const r = await addCentroAction(centro.id);
+        if (r.ok) setAssociated(r.centros);
+      });
+    },
+    [associated],
+  );
+
+  const handleRemove = useCallback((id: number) => {
+    setRemovingId(id);
+    startTransition(async () => {
+      const r = await removeCentroAction(id);
+      if (r.ok) setAssociated(r.centros);
+      setRemovingId(null);
+    });
   }, []);
 
   if (loading || !user) {
@@ -104,20 +129,23 @@ export default function DashboardScreen() {
           </h1>
         </header>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <CentrosColumn
-            centros={filteredCentros}
-            query={query}
-            onQueryChange={setQuery}
-            selectedId={selectedId}
+            centros={associated}
+            selectedId={selectedCentro?.id ?? null}
             onSelect={setSelectedId}
+            onAdd={handleAdd}
+            onRemove={handleRemove}
+            removingId={removingId}
+            busy={isPending}
           />
           <InsumosColumn
             centro={selectedCentro}
             insumos={insumos}
-            onAdd={addInsumo}
+            loading={insumosLoading}
+            submitting={addingInsumo}
+            onAdd={handleAddInsumo}
           />
-          <UsersColumn centro={selectedCentro} users={users} />
         </div>
       </main>
     </>
@@ -143,45 +171,41 @@ function Column({
 
 function CentrosColumn({
   centros,
-  query,
-  onQueryChange,
   selectedId,
   onSelect,
+  onAdd,
+  onRemove,
+  removingId,
+  busy,
 }: {
   centros: Centro[];
-  query: string;
-  onQueryChange: (value: string) => void;
   selectedId: number | null;
   onSelect: (id: number) => void;
+  onAdd: (centro: Centro) => void;
+  onRemove: (id: number) => void;
+  removingId: number | null;
+  busy: boolean;
 }) {
   return (
     <Column title="Mis centros">
-      <input
-        type="search"
-        value={query}
-        onChange={(e) => onQueryChange(e.target.value)}
-        placeholder="Buscar centro…"
-        aria-label="Buscar centro"
-        className="mb-3 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
-      />
+      <div className="mb-3">
+        <CentroAutocomplete onPick={onAdd} />
+      </div>
       {centros.length === 0 ? (
-        <p className="px-1 py-4 text-sm text-slate-500">Sin centros.</p>
+        <p className="px-1 py-4 text-sm text-slate-500">
+          Buscá un centro para asociarlo.
+        </p>
       ) : (
-        <ul className="space-y-1">
+        <ul className="space-y-1.5" aria-busy={busy}>
           {centros.map((c) => (
             <li key={c.id}>
-              <button
-                type="button"
-                onClick={() => onSelect(c.id)}
-                aria-pressed={c.id === selectedId}
-                className={`w-full rounded-md px-3 py-2 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500/40 ${
-                  c.id === selectedId
-                    ? "bg-sky-50 font-medium text-sky-900"
-                    : "text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                {c.nombre}
-              </button>
+              <UserCentroAssociated
+                centro={c}
+                selected={c.id === selectedId}
+                removing={removingId === c.id}
+                onSelect={onSelect}
+                onRemove={onRemove}
+              />
             </li>
           ))}
         </ul>
@@ -193,20 +217,26 @@ function CentrosColumn({
 function InsumosColumn({
   centro,
   insumos,
+  loading,
+  submitting,
   onAdd,
 }: {
   centro: Centro | null;
-  insumos: Insumo[];
-  onAdd: (insumo: Insumo) => void;
+  insumos: InsumoResponseItem[];
+  loading: boolean;
+  submitting: boolean;
+  onAdd: (item: InsumoItem) => void;
 }) {
   const [descripcion, setDescripcion] = useState("");
   const [cantidad, setCantidad] = useState("");
 
+  const desc = descripcion.trim();
+  const qty = Number(cantidad);
+  const isValid = desc.length > 0 && Number.isFinite(qty) && qty > 0;
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    const desc = descripcion.trim();
-    const qty = Number(cantidad);
-    if (!desc || !Number.isFinite(qty) || qty <= 0) return;
+    if (!isValid || submitting) return;
     onAdd({ descripcion: desc, cantidad: qty });
     setDescripcion("");
     setCantidad("");
@@ -220,7 +250,8 @@ function InsumosColumn({
           onChange={(e) => setDescripcion(e.target.value)}
           placeholder="Descripción"
           aria-label="Descripción del insumo"
-          className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
+          disabled={!centro || submitting}
+          className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30 disabled:bg-slate-50"
         />
         <input
           type="number"
@@ -229,60 +260,33 @@ function InsumosColumn({
           onChange={(e) => setCantidad(e.target.value)}
           placeholder="Cant."
           aria-label="Cantidad"
-          className="w-20 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
+          disabled={!centro || submitting}
+          className="w-20 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30 disabled:bg-slate-50"
         />
         <button
+          id="add-insumo"
           type="submit"
-          className="shrink-0 rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+          disabled={!isValid || submitting}
+          className="shrink-0 rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500/40 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
-          Añadir
+          {submitting ? "Añadiendo…" : "Añadir"}
         </button>
       </form>
-      {insumos.length === 0 ? (
-        <p className="px-1 py-4 text-sm text-slate-500">Sin insumos.</p>
+      {!centro ? (
+        <p className="px-1 py-4 text-sm text-slate-500">
+          Elegí un centro para ver sus insumos.
+        </p>
+      ) : loading ? (
+        <p className="px-1 py-4 text-sm text-slate-500">Cargando insumos…</p>
+      ) : insumos.length === 0 ? (
+        <p className="px-1 py-4 text-sm text-slate-500">
+          Sin insumos. Añadí el primero.
+        </p>
       ) : (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-slate-100" aria-busy={submitting}>
           {insumos.map((insumo, i) => (
-            <li
-              key={`${insumo.descripcion}-${i}`}
-              className="flex items-center justify-between gap-3 py-2 text-sm"
-            >
-              <span className="text-slate-800">{insumo.descripcion}</span>
-              <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-                {insumo.cantidad}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Column>
-  );
-}
-
-function UsersColumn({
-  centro,
-  users,
-}: {
-  centro: Centro | null;
-  users: CentroUser[];
-}) {
-  return (
-    <Column title={centro ? `Personal · ${centro.nombre}` : "Personal"}>
-      {users.length === 0 ? (
-        <p className="px-1 py-4 text-sm text-slate-500">Sin personal.</p>
-      ) : (
-        <ul className="space-y-1">
-          {users.map((u, i) => (
-            <li
-              key={`${u.nombre}-${i}`}
-              className="flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm hover:bg-slate-50"
-            >
-              <span className="text-slate-800">{u.nombre}</span>
-              {u.mpps != null && (
-                <span className="shrink-0 text-xs text-slate-500">
-                  MPPS {u.mpps}
-                </span>
-              )}
+            <li key={`${insumo.descripcion}-${insumo.create_at}-${i}`}>
+              <CentroInsumoItem insumo={insumo} />
             </li>
           ))}
         </ul>
