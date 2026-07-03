@@ -24,6 +24,30 @@ export async function signUp(
   });
 }
 
+/** Associate a centro with the current user. */
+export async function addCentro(
+  centroId: number
+): Promise<Paginated<UserResponse>> {
+  const token = await requireServerToken();
+  return apiFetch<Paginated<UserResponse>>(endpoints.addCentro, {
+    method: "PUT",
+    token,
+    json: { centro_id: centroId },
+  });
+}
+
+/** Remove a centro association from the current user. */
+export async function removeCentro(
+  centroId: number
+): Promise<Paginated<UserResponse>> {
+  const token = await requireServerToken();
+  return apiFetch<Paginated<UserResponse>>(endpoints.removeCentro, {
+    method: "DELETE",
+    token,
+    json: { centro_id: centroId },
+  });
+}
+
 /** Abort the sign-up: the backend deletes the Firebase user. */
 export async function abortSignUp(): Promise<void> {
   const token = await requireServerToken();

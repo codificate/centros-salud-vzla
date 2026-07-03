@@ -12,6 +12,8 @@ export const endpoints = {
   signUp: "/api/v1/usuarios/sign-up",
   abortSignUp: "/api/v1/usuarios/sign-up/abort",
   signIn: "/api/v1/usuarios/sign-in",
+  addCentro: "/api/v1/usuarios/add/centro",
+  removeCentro: "/api/v1/usuarios/remove/centro",
   insumos: "/api/v1/insumos/",
   insumosByCentro: (centroId: number) => `/api/v1/insumos/by/${centroId}`,
 } as const;

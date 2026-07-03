@@ -1,8 +1,14 @@
 "use server";
 
-import { signIn, signUp, abortSignUp } from "@/lib/api/usuarios";
+import {
+  signIn,
+  signUp,
+  abortSignUp,
+  addCentro,
+  removeCentro,
+} from "@/lib/api/usuarios";
 import { ApiError } from "@/lib/api/http";
-import type { UserResponse } from "@/lib/api/types";
+import type { Centro, UserResponse } from "@/lib/api/types";
 
 export type SignInResult =
   | { status: "exists"; user: UserResponse }
@@ -41,6 +47,42 @@ export async function signUpAction(
     if (e instanceof ApiError)
       return { ok: false, error: e.message };
     return { ok: false, error: "No se pudo completar el registro." };
+  }
+}
+
+export type CentrosResult =
+  | { ok: true; centros: Centro[] }
+  | { ok: false; error: string };
+
+/** Centros the current user is associated with. */
+export async function listUserCentrosAction(): Promise<CentrosResult> {
+  try {
+    const { data } = await signIn();
+    return { ok: true, centros: data.centros };
+  } catch {
+    return { ok: false, error: "No se pudieron cargar tus centros." };
+  }
+}
+
+export async function addCentroAction(
+  centroId: number
+): Promise<CentrosResult> {
+  try {
+    const { data } = await addCentro(centroId);
+    return { ok: true, centros: data.centros };
+  } catch {
+    return { ok: false, error: "No se pudo asociar el centro." };
+  }
+}
+
+export async function removeCentroAction(
+  centroId: number
+): Promise<CentrosResult> {
+  try {
+    const { data } = await removeCentro(centroId);
+    return { ok: true, centros: data.centros };
+  } catch {
+    return { ok: false, error: "No se pudo quitar el centro." };
   }
 }
 
