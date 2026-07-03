@@ -12,11 +12,9 @@ import type {
 /** Supplies for a centro (newest first). Auth required. */
 export const getInsumosByCentro = cache(
   async (centroId: number): Promise<Paginated<InsumosResponse>> => {
-    const token = await requireServerToken();
     return apiFetch<Paginated<InsumosResponse>>(
       endpoints.insumosByCentro(centroId),
       {
-        token,
         next: { tags: [`insumos:${centroId}`] },
       }
     );

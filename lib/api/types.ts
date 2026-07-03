@@ -32,6 +32,7 @@ export interface InsumoItem {
 
 export interface InsumoResponseItem extends InsumoItem {
   create_at: string;
+  created_by: string
 }
 
 export interface InsumosCreateRequest {
