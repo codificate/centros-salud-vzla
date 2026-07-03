@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useSignupFlow } from "@/components/hooks/useSignupFlow";
 import { signInWithGoogle } from "@/lib/firebase/google";
@@ -9,6 +10,7 @@ import SignupGoogleDialog from "@/components/SignupGoogleDialog";
 
 export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, loading, logout } = useAuth();
   const { askGoogle, busy, error, start, confirmGoogle, cancelGoogle } =
     useSignupFlow();
@@ -29,12 +31,29 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
   return (
     <nav className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur">
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
-        <span className="flex items-center gap-2 font-semibold text-slate-900">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-sky-600 text-xs font-bold text-white">
-            CS
-          </span>
-          Centros de Salud
-        </span>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-semibold text-slate-900"
+          >
+            <span className="grid h-7 w-7 place-items-center rounded-md bg-sky-600 text-xs font-bold text-white">
+              CS
+            </span>
+            <span className="hidden sm:inline">Centros de Salud</span>
+          </Link>
+
+          <Link
+            href="/acerca"
+            aria-current={pathname === "/acerca" ? "page" : undefined}
+            className={`text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-sky-500/40 ${
+              pathname === "/acerca"
+                ? "text-sky-700"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Acerca de
+          </Link>
+        </div>
 
         <div className="flex items-center gap-2">
           {onExit ? (
