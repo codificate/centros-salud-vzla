@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { IconId } from "@tabler/icons-react";
+import { IconId, IconMapPin } from "@tabler/icons-react";
 import { useSignUpFlow } from "@/components/providers/SignUpFlowProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { signUpAction, abortSignUpAction } from "@/app/actions/usuarios";
 import { setTokenCookie } from "@/lib/firebase/token";
 import ExitConfirmDialog from "@/components/ExitConfirmDialog";
 import CentroAutocomplete from "@/components/CentroAutocomplete";
+import Navbar from "@/components/Navbar";
 
 interface CedulaVerification {
   nacionalidad: string;
@@ -134,7 +135,8 @@ export default function SignUpOnboardingScreen() {
       setExiting(false);
       return;
     }
-    // Only after 200: sign out, clear the cookie, leave.
+    // Only after 200: clear the selected centro, sign out, clear cookie, leave.
+    setCentro(null);
     await logout(); // Firebase signOut
     setTokenCookie(null); // clear the auth token cookie
     router.replace("/");
@@ -180,17 +182,41 @@ export default function SignUpOnboardingScreen() {
   };
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-6 px-4 py-10">
+    <>
+      <Navbar onExit={() => setConfirmExitOpen(true)} />
+      <main className="mx-auto flex max-w-md flex-col gap-6 px-4 py-10">
       <header>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">
           Continua con tu registro
         </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          {centro?.nombre ?? "Seleccioná tu centro para continuar"}
-        </p>
       </header>
 
       <CentroAutocomplete selectedName={centro?.nombre ?? ""} onPick={setCentro} />
+
+      {centro ? (
+        <div
+          id="centro-selected"
+          className="-mt-2 flex items-center gap-2.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2.5"
+        >
+          <IconMapPin
+            className="h-5 w-5 shrink-0 text-sky-600"
+            stroke={1.8}
+            aria-hidden
+          />
+          <span className="min-w-0">
+            <span className="block text-[11px] font-semibold uppercase tracking-wide text-sky-700">
+              Centro seleccionado
+            </span>
+            <span className="block truncate text-sm font-semibold text-sky-900">
+              {centro.nombre}
+            </span>
+          </span>
+        </div>
+      ) : (
+        <p id="centro-selected" className="-mt-2 text-sm text-slate-500">
+          Selecciona tu centro para continuar.
+        </p>
+      )}
 
       <div>
         <label
@@ -251,7 +277,7 @@ export default function SignUpOnboardingScreen() {
       </div>
 
       <div id="upload-photo-cedula-disclaimer">
-          <span className="text-sm font-medium text-slate-700">
+          <span className="block rounded-lg bg-amber-100 px-4 py-3 text-sm font-medium text-amber-800">
             Nota: Bajo ningún concepto, guardaremos, almacenaremos, o compartiremos con terceros la foto de tu documento de identidad. Entendemos lo importante que es esto para ti, así que por ahora solo necesitamos validar los datos que aparezcan en tu cédula.
           </span>
       </div>
@@ -287,7 +313,7 @@ export default function SignUpOnboardingScreen() {
           </div>
         ) : (
           <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-            Los datos de la cédula no coinciden con la foto. Probá otra foto.
+            Los datos de la cédula no coinciden con la foto. Prueba con otra foto.
           </div>
         ))}
 
@@ -314,6 +340,7 @@ export default function SignUpOnboardingScreen() {
           setConfirmExitOpen(false);
         }}
       />
-    </main>
+      </main>
+    </>
   );
 }

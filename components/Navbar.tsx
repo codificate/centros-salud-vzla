@@ -7,7 +7,7 @@ import { useSignupFlow } from "@/components/hooks/useSignupFlow";
 import { signInWithGoogle } from "@/lib/firebase/google";
 import SignupGoogleDialog from "@/components/SignupGoogleDialog";
 
-export default function Navbar() {
+export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
   const router = useRouter();
   const { user, loading, logout } = useAuth();
   const { askGoogle, busy, error, start, confirmGoogle, cancelGoogle } =
@@ -37,6 +37,17 @@ export default function Navbar() {
         </span>
 
         <div className="flex items-center gap-2">
+          {onExit ? (
+            <button
+              id="abort-sign-up-button"
+              type="button"
+              onClick={onExit}
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+            >
+              Salir
+            </button>
+          ) : (
+            <>
           {error && (
             <span className="hidden text-xs text-amber-700 sm:inline">
               {error}
@@ -75,6 +86,8 @@ export default function Navbar() {
               >
                 Regístrate
               </button>
+            </>
+          )}
             </>
           )}
         </div>
