@@ -5,9 +5,14 @@ import { useRouter } from "next/navigation";
 import { IconId, IconMapPin } from "@tabler/icons-react";
 import { useSignUpFlow } from "@/components/providers/SignUpFlowProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { signUpAction, abortSignUpAction } from "@/app/actions/usuarios";
+import {
+  signUpAction,
+  abortSignUpAction,
+  signInAction,
+} from "@/app/actions/usuarios";
 import { setTokenCookie } from "@/lib/firebase/token";
 import ExitConfirmDialog from "@/components/ExitConfirmDialog";
+import ErrorDialog from "@/components/ErrorDialog";
 import CentroAutocomplete from "@/components/CentroAutocomplete";
 import Navbar from "@/components/Navbar";
 
@@ -97,7 +102,33 @@ export default function SignUpOnboardingScreen() {
   const [confirmExitOpen, setConfirmExitOpen] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [exitError, setExitError] = useState<string | null>(null);
+  // Guard: `null` while checking, `true` when the signup is already complete.
+  const [alreadyRegistered, setAlreadyRegistered] = useState<boolean | null>(
+    null
+  );
+  const [leavingGuard, setLeavingGuard] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  // Signup is transactional: once complete the user lives on /dashboard.
+  // Reaching /onboarding again (e.g. browser back) is blocked here.
+  useEffect(() => {
+    let active = true;
+    signInAction().then((res) => {
+      if (active) setAlreadyRegistered(res.status === "exists");
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const goToCentros = () => router.replace("/");
+
+  const logoutFromGuard = async () => {
+    setLeavingGuard(true);
+    await logout();
+    setTokenCookie(null);
+    router.replace("/");
+  };
 
   const verified = useMemo(
     () => (cedulaData ? isCedulaMatch(cedulaData) : false),
@@ -180,6 +211,27 @@ export default function SignUpOnboardingScreen() {
       else setError(res.error);
     });
   };
+
+  if (alreadyRegistered) {
+    return (
+      <>
+        <Navbar />
+        <ExitConfirmDialog
+          open
+          busy={leavingGuard}
+          error={null}
+          title="Ya completaste tu registro"
+          message="Tu cuenta ya está registrada. ¿Querés cerrar sesión o volver al listado de centros?"
+          confirmLabel="Cerrar sesión"
+          busyLabel="Cerrando…"
+          cancelLabel="Ir al listado de centros"
+          cancelDisabledWhileBusy={false}
+          onConfirm={logoutFromGuard}
+          onCancel={goToCentros}
+        />
+      </>
+    );
+  }
 
   return (
     <>
@@ -317,8 +369,6 @@ export default function SignUpOnboardingScreen() {
           </div>
         ))}
 
-      {error && <p className="text-sm text-amber-700">{error}</p>}
-
       <button
         id="complete-signup-button"
         type="button"
@@ -328,6 +378,12 @@ export default function SignUpOnboardingScreen() {
       >
         {isPending ? "Registrando…" : "Confirmar registro"}
       </button>
+
+      <ErrorDialog
+        open={error !== null}
+        message={error}
+        onClose={() => setError(null)}
+      />
 
       <ExitConfirmDialog
         open={confirmExitOpen}
