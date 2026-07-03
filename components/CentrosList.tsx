@@ -1,6 +1,9 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import type { Centro } from "@/lib/centros";
+
+const PAGE_SIZE = 15;
 
 export default function CentrosList({
   centros,
@@ -9,9 +12,20 @@ export default function CentrosList({
   centros: Centro[];
   onSelect: (centro: Centro) => void;
 }) {
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  const showMore = useCallback(
+    () => setVisibleCount((n) => n + PAGE_SIZE),
+    [],
+  );
+
+  const visible = centros.slice(0, visibleCount);
+  const hasMore = visibleCount < centros.length;
+
   return (
+    <>
     <ul className="space-y-3">
-      {centros.map((c) => (
+      {visible.map((c) => (
         <li key={c.id}>
           <button
             type="button"
@@ -47,5 +61,17 @@ export default function CentrosList({
         </li>
       ))}
     </ul>
+    {hasMore && (
+      <div className="mt-4 flex justify-center">
+        <button
+          type="button"
+          onClick={showMore}
+          className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+        >
+          Ver más
+        </button>
+      </div>
+    )}
+    </>
   );
 }
