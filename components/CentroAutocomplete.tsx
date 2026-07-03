@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchCentros } from "@/app/actions/centros";
 import type { Centro } from "@/lib/centros";
 
@@ -14,12 +14,23 @@ export default function CentroAutocomplete({
   const [centros, setCentros] = useState<Centro[]>([]);
   const [query, setQuery] = useState(selectedName);
   const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchCentros()
       .then(setCentros)
       .catch(() => setCentros([]));
   }, []);
+
+  const handlePick = useCallback(
+    (centro: Centro) => {
+      onPick(centro);
+      setQuery("");
+      setOpen(false);
+      inputRef.current?.blur();
+    },
+    [onPick],
+  );
 
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -38,6 +49,7 @@ export default function CentroAutocomplete({
         Centro
       </label>
       <input
+        ref={inputRef}
         id="centro-search"
         type="text"
         role="combobox"
@@ -50,7 +62,7 @@ export default function CentroAutocomplete({
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
-        placeholder="Buscá tu centro…"
+        placeholder="Busca tu centro…"
         className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
       />
       {open && suggestions.length > 0 && (
@@ -60,11 +72,7 @@ export default function CentroAutocomplete({
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  onPick(c);
-                  setQuery(c.nombre);
-                  setOpen(false);
-                }}
+                onClick={() => handlePick(c)}
                 className="block w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
               >
                 <span className="font-medium text-slate-900">{c.nombre}</span>

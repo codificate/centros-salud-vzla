@@ -2,15 +2,17 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   IconFirstAidKit,
   IconUserPlus,
   IconArrowBearRight,
 } from "@tabler/icons-react";
 import type { Centro } from "@/lib/centros";
-import InsumosPanel from "@/components/InsumosPanel";
+import PublicInsumosByCentro from "@/components/PublicInsumosByCentro";
 import SignupGoogleDialog from "@/components/SignupGoogleDialog";
 import { useSignupFlow } from "@/components/hooks/useSignupFlow";
+import { useIsWideScreen } from "@/lib/screen";
 
 const ACTIONS = [
   { key: "insumos", label: "Ver insumos", Icon: IconFirstAidKit },
@@ -48,6 +50,8 @@ export default function CentroDrawer({
   }, [centro, onClose]);
 
   const open = centro !== null;
+  const router = useRouter();
+  const isWide = useIsWideScreen();
 
   const { askGoogle, busy, error: flowError, start, confirmGoogle, cancelGoogle, reset } =
     useSignupFlow();
@@ -59,8 +63,21 @@ export default function CentroDrawer({
     reset();
   }, [centro?.id, reset]);
 
+  const expanded = isWide && showInsumos;
+
+  const handleClose = () => {
+    setShowInsumos(false);
+    //onClose();
+  };
+
   const handlers: Record<string, (() => void) | undefined> = {
-    insumos: () => setShowInsumos((v) => !v),
+    insumos: centro
+      ? () => {
+          // Wide: expand the drawer inline. Responsive: go to a dedicated route.
+          if (isWide) setShowInsumos((v) => !v);
+          else router.push(`/insumos/centro/${centro.id}`);
+        }
+      : undefined,
     trabajo: centro ? () => start(centro) : undefined,
     llegar: centro
       ? () => {
@@ -90,10 +107,17 @@ export default function CentroDrawer({
         role="dialog"
         aria-modal="true"
         aria-label={`Detalle de ${centro?.nombre ?? "centro"}`}
-        className={`absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
+        className={`absolute right-0 top-0 flex h-full w-full ${
+          expanded ? "max-w-4xl" : "max-w-md"
+        } bg-white shadow-2xl transition-[transform,max-width] duration-300 ease-out ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
+        <div
+          className={`flex h-full w-full flex-col ${
+            expanded ? "lg:w-[28rem] lg:shrink-0 lg:border-r lg:border-slate-200" : ""
+          }`}
+        >
         <div className="h-[40%] min-h-[220px] w-full border-b border-slate-200 bg-slate-100">
           {open && centro && (
             <CentroMap
@@ -162,7 +186,7 @@ export default function CentroDrawer({
                 </div>
               </dl>
 
-              <div className="mt-4 grid grid-cols-3 gap-3">
+              <div id="centro-action-buttons" className="mt-4 grid grid-cols-3 gap-3">
                 {ACTIONS.map(({ key, label, Icon }) => {
                   const isInsumos = key === "insumos";
                   return (
@@ -191,15 +215,6 @@ export default function CentroDrawer({
               {flowError && (
                 <p className="mt-3 text-sm text-amber-700">{flowError}</p>
               )}
-
-              {showInsumos && (
-                <section className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
-                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Insumos
-                  </h3>
-                  <InsumosPanel centroId={centro.id} />
-                </section>
-              )}
             </>
           )}
         </div>
@@ -213,10 +228,24 @@ export default function CentroDrawer({
             Cerrar
           </button>
         </div>
+        </div>
+
+        {expanded && centro && (
+          <div className="hidden h-full min-w-0 flex-1 flex-col bg-slate-50 lg:flex">
+            <div className="border-b border-slate-200 bg-white px-4 py-3">
+              <h3 className="truncate text-sm font-semibold text-slate-900">
+                Insumos · {centro.nombre}
+              </h3>
+            </div>
+            <div className="min-h-0 flex-1">
+              <PublicInsumosByCentro centroId={centro.id} />
+            </div>
+          </div>
+        )}
 
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleClose}
           aria-label="Cerrar panel"
           className="absolute right-3 top-3 z-10 rounded-md bg-white/90 p-1.5 text-slate-700 shadow hover:bg-white"
         >

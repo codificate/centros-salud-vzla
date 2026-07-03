@@ -6,16 +6,18 @@ import { requireServerToken } from "./auth";
 import type {
   InsumoItem,
   InsumosResponse,
+  Paginated,
 } from "./types";
 
 /** Supplies for a centro (newest first). Auth required. */
 export const getInsumosByCentro = cache(
-  async (centroId: number): Promise<InsumosResponse> => {
-    const token = await requireServerToken();
-    return apiFetch<InsumosResponse>(endpoints.insumosByCentro(centroId), {
-      token,
-      next: { tags: [`insumos:${centroId}`] },
-    });
+  async (centroId: number): Promise<Paginated<InsumosResponse>> => {
+    return apiFetch<Paginated<InsumosResponse>>(
+      endpoints.insumosByCentro(centroId),
+      {
+        next: { tags: [`insumos:${centroId}`] },
+      }
+    );
   }
 );
 
@@ -23,9 +25,9 @@ export const getInsumosByCentro = cache(
 export async function createInsumos(
   centro: number,
   insumos: InsumoItem[]
-): Promise<InsumosResponse> {
+): Promise<Paginated<InsumosResponse>> {
   const token = await requireServerToken();
-  return apiFetch<InsumosResponse>(endpoints.insumos, {
+  return apiFetch<Paginated<InsumosResponse>>(endpoints.insumos, {
     method: "POST",
     token,
     json: { centro, insumos },

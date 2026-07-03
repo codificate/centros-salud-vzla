@@ -1,3 +1,16 @@
+export interface Pagination {
+  current_page: number;
+  next_page: number;
+  items_per_page: number;
+  pages: number;
+}
+
+/** Envelope wrapping every paginated backend response. */
+export interface Paginated<T> {
+  data: T;
+  pagination: Pagination;
+}
+
 export interface Geolocalizacion {
   latitud: number;
   longitud: number;
@@ -19,6 +32,7 @@ export interface InsumoItem {
 
 export interface InsumoResponseItem extends InsumoItem {
   create_at: string;
+  created_by: string
 }
 
 export interface InsumosCreateRequest {
