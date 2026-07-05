@@ -23,6 +23,15 @@ export default function CentroAutocomplete({
       .catch(() => setCentros([]));
   }, []);
 
+  useEffect(() => {
+    const term = query.trim();
+    if (!term) return;
+    const id = setTimeout(() => {
+      track("search", { search_term: term, context: "centro_autocomplete" });
+    }, 400);
+    return () => clearTimeout(id);
+  }, [query]);
+
   const handlePick = useCallback(
     (centro: Centro) => {
       track("centro_select", { centro_id: String(centro.id), source: "autocomplete" });
@@ -63,9 +72,6 @@ export default function CentroAutocomplete({
           const val = e.target.value;
           setQuery(val);
           setOpen(true);
-          if (val.trim()) {
-            track("search", { search_term: val.trim(), context: "centro_autocomplete" });
-          }
         }}
         onFocus={() => setOpen(true)}
         placeholder="Busca tu centro…"
