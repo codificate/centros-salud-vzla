@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { track, setAnalyticsUser, initAnalytics } from "./analytics";
+import { track, setAnalyticsUser, initAnalytics } from "./analytics.ts";
 
 test("track is a no-op before init (server-safe, no throw)", () => {
   assert.doesNotThrow(() => track("login", { method: "google" }));
