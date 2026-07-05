@@ -7,6 +7,8 @@ import {
   IconFirstAidKit,
   IconUserPlus,
   IconArrowBearRight,
+  IconShare,
+  IconCheck,
 } from "@tabler/icons-react";
 import type { Centro } from "@/lib/centros";
 import { track } from "@/lib/firebase/analytics";
@@ -67,11 +69,26 @@ export default function CentroDrawer({
     useSignupFlow();
 
   const [showInsumos, setShowInsumos] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setShowInsumos(false);
+    setCopied(false);
     reset();
   }, [centro?.id, reset]);
+
+  const handleShare = async () => {
+    if (!centro) return;
+    const url = `${window.location.origin}/centro/${centro.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      track("centro_share", { centro_id: String(centro.id) });
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable (insecure context / denied permission).
+    }
+  };
 
   const expanded = isWide && showInsumos;
 
@@ -136,13 +153,28 @@ export default function CentroDrawer({
             expanded ? "lg:w-[28rem] lg:shrink-0 lg:border-r lg:border-slate-200" : ""
           }`}
         >
-        <div className="h-[40%] min-h-[220px] w-full border-b border-slate-200 bg-slate-100">
+        <div className="relative h-[40%] min-h-[220px] w-full border-b border-slate-200 bg-slate-100">
           {open && centro && (
-            <CentroMap
-              lat={centro.geolocalizacion.latitud}
-              lng={centro.geolocalizacion.longitud}
-              name={centro.nombre}
-            />
+            <>
+              <CentroMap
+                lat={centro.geolocalizacion.latitud}
+                lng={centro.geolocalizacion.longitud}
+                name={centro.nombre}
+              />
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label="Compartir enlace del centro"
+                className="absolute bottom-3 right-3 z-[1000] flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-2 text-xs font-medium text-slate-700 shadow-md ring-1 ring-slate-200 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+              >
+                {copied ? (
+                  <IconCheck className="h-4 w-4 text-emerald-600" stroke={1.5} aria-hidden />
+                ) : (
+                  <IconShare className="h-4 w-4 text-sky-700" stroke={1.5} aria-hidden />
+                )}
+                {copied ? "¡Copiado!" : "Compartir"}
+              </button>
+            </>
           )}
         </div>
 
