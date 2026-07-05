@@ -3,6 +3,22 @@
 All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased] — Share centro URL & Google-branded sign-up
+
+### Added
+- **Shareable centro route** (`/centro/[centroId]`): server fetches centros via
+  `getCentros()`, `notFound()` when the id is missing, and renders the new
+  `CentroDetailScreen` (navbar + detail). Wide screens show two columns
+  (detail + `PublicInsumosByCentro`); mobile shows detail only and the
+  "Ver insumos" button navigates to `/insumos/centro/[centroId]`.
+- **Share action in `CentroDrawer`**: button over the map copies
+  `${origin}/centro/:id` to the clipboard and fires the new `centro_share`
+  analytics event (`lib/firebase/events.ts`).
+- **Google-branded sign-up button** (`SignupGoogleDialog`): follows Google
+  branding guidelines — `#F2F2F2` fill, no stroke, 48px height, 12px horizontal
+  padding, `google-icon-neutral.svg` (`public/`) with 10px gap, `#1F1F1F`
+  Google Sans Medium 14/20. Google Sans loaded in `app/layout.tsx`.
+
 ## [Unreleased] — Insumos catalog, filters & onboarding polish
 
 ### Added
