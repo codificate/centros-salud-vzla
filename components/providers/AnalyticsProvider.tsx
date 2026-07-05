@@ -19,9 +19,13 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
   // Log page_view after init resolves so SPA navigations are captured.
   useEffect(() => {
+    let cancelled = false;
     void initAnalytics().then(() => {
-      track("page_view", { page_path: pathname });
+      if (!cancelled) track("page_view", { page_path: pathname });
     });
+    return () => {
+      cancelled = true;
+    };
   }, [pathname]);
 
   // Associate events with the authenticated user (UID only). null on logout.
