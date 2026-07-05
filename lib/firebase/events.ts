@@ -10,6 +10,7 @@ export interface AnalyticsEventMap {
   signup_abandon: { step: number };
   centro_select: { centro_id: string; source: "list" | "map" | "autocomplete" };
   centro_view_insumos: { centro_id: string };
+  centro_share: { centro_id: string };
   insumo_filter: { filter_type: string; value: string };
   map_interaction: { action: "marker_click" | "zoom"; centro_id?: string };
   nav_click: { target: string };
