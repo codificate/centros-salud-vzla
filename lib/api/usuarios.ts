@@ -14,13 +14,14 @@ export async function signIn(): Promise<Paginated<UserResponse>> {
 export async function signUp(
   centroId: number,
   mpps: number,
-  cedula: string
+  cedula: string,
+  especialidad: string
 ): Promise<Paginated<UserResponse>> {
   const token = await requireServerToken();
   return apiFetch<Paginated<UserResponse>>(endpoints.signUp, {
     method: "POST",
     token,
-    json: { centro_id: centroId, mpps, cedula: cedula },
+    json: { centro_id: centroId, mpps, cedula, especialidad },
   });
 }
 

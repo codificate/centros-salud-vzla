@@ -38,10 +38,11 @@ export type SignUpResult =
 export async function signUpAction(
   centroId: number,
   mpps: number,
-  cedula: string
+  cedula: string,
+  especialidad: string
 ): Promise<SignUpResult> {
   try {
-    const { data } = await signUp(centroId, mpps, cedula);
+    const { data } = await signUp(centroId, mpps, cedula, especialidad);
     return { ok: true, user: data };
   } catch (e) {
     if (e instanceof ApiError)

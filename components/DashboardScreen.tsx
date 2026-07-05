@@ -12,8 +12,11 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import Navbar from "@/components/Navbar";
 import CentroAutocomplete from "@/components/CentroAutocomplete";
+import TiposInsumosAutocomplete from "@/components/TiposInsumosAutocomplete";
 import UserCentroAssociated from "@/components/UserCentroAssociated";
 import CentroInsumoItem from "@/components/CentroInsumoItem";
+import ErrorDialog from "@/components/ErrorDialog";
+import { distanceKm } from "@/lib/geo";
 import {
   listUserCentrosAction,
   addCentroAction,
@@ -23,12 +26,19 @@ import {
   fetchInsumosAction,
   createInsumosAction,
 } from "@/app/actions/insumos";
-import type { Centro, InsumoItem, InsumoResponseItem } from "@/lib/api/types";
+import type {
+  Centro,
+  InsumoItem,
+  InsumoResponseItem,
+  TipoInsumo,
+} from "@/lib/api/types";
 
 interface CentroUser {
   nombre: string;
   mpps?: number;
 }
+
+const MAX_CENTRO_DISTANCE_KM = 100;
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -46,6 +56,7 @@ export default function DashboardScreen() {
   const [insumos, setInsumos] = useState<InsumoResponseItem[]>([]);
   const [insumosLoading, setInsumosLoading] = useState(false);
   const [addingInsumo, startInsumoTransition] = useTransition();
+  const [addError, setAddError] = useState<string | null>(null);
 
   useEffect(() => {
     listUserCentrosAction().then((r) => {
@@ -94,6 +105,19 @@ export default function DashboardScreen() {
   const handleAdd = useCallback(
     (centro: Centro) => {
       if (associated.some((c) => c.id === centro.id)) return;
+
+      // New centro must be within 100 km of the first associated one.
+      const first = associated[0];
+      if (first && centro.geolocalizacion && first.geolocalizacion) {
+        const km = distanceKm(first.geolocalizacion, centro.geolocalizacion);
+        if (km > MAX_CENTRO_DISTANCE_KM) {
+          setAddError(
+            `«${centro.nombre}» está a ${Math.round(km)} km de «${first.nombre}». Solo puedes asociar centros a menos de ${MAX_CENTRO_DISTANCE_KM} km del primer centro que asociaste.`,
+          );
+          return;
+        }
+      }
+
       startTransition(async () => {
         const r = await addCentroAction(centro.id);
         if (r.ok) setAssociated(r.centros);
@@ -148,6 +172,13 @@ export default function DashboardScreen() {
           />
         </div>
       </main>
+
+      <ErrorDialog
+        open={addError !== null}
+        title="No se pudo asociar el centro"
+        message={addError}
+        onClose={() => setAddError(null)}
+      />
     </>
   );
 }
@@ -227,31 +258,34 @@ function InsumosColumn({
   submitting: boolean;
   onAdd: (item: InsumoItem) => void;
 }) {
-  const [descripcion, setDescripcion] = useState("");
+  const [tipo, setTipo] = useState<TipoInsumo | null>(null);
   const [cantidad, setCantidad] = useState("");
 
-  const desc = descripcion.trim();
   const qty = Number(cantidad);
-  const isValid = desc.length > 0 && Number.isFinite(qty) && qty > 0;
+  const isValid = tipo != null && Number.isFinite(qty) && qty > 0;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!isValid || submitting) return;
-    onAdd({ descripcion: desc, cantidad: qty });
-    setDescripcion("");
+    if (!isValid || submitting || !tipo) return;
+    onAdd({
+      descripcion: tipo.nombre,
+      cantidad: qty,
+      tipo_id: tipo.id,
+      categoria: tipo.categoria,
+      prioridad: tipo.prioridad,
+      unidad_medida: tipo.unidad_medida,
+    });
+    setTipo(null);
     setCantidad("");
   };
 
   return (
     <Column title={centro ? `Insumos · ${centro.nombre}` : "Insumos"}>
       <form onSubmit={submit} className="mb-3 flex gap-2">
-        <input
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
-          placeholder="Descripción"
-          aria-label="Descripción del insumo"
+        <TiposInsumosAutocomplete
+          value={tipo?.nombre ?? ""}
           disabled={!centro || submitting}
-          className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30 disabled:bg-slate-50"
+          onPick={setTipo}
         />
         <input
           type="number"

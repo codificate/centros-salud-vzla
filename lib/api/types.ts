@@ -25,9 +25,23 @@ export interface Centro {
   telefono?: string | null;
 }
 
+/** Catalog entry from the public `tipos-insumos` endpoint. */
+export interface TipoInsumo {
+  id: string;
+  nombre: string;
+  categoria: string;
+  prioridad: string;
+  unidad_medida: string;
+}
+
 export interface InsumoItem {
   cantidad: number;
   descripcion: string;
+  /** Selected catalog type (from `tipos-insumos`). */
+  tipo_id?: string;
+  categoria?: string;
+  prioridad?: string;
+  unidad_medida?: string;
 }
 
 export interface InsumoResponseItem extends InsumoItem {

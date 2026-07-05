@@ -9,6 +9,7 @@ export const API_BASE_URL = RAW_BASE.replace(/\/$/, "");
 
 export const endpoints = {
   centros: "/api/v1/centros/",
+  tiposInsumos: "/api/v1/tipos-insumos/",
   signUp: "/api/v1/usuarios/sign-up",
   abortSignUp: "/api/v1/usuarios/sign-up/abort",
   signIn: "/api/v1/usuarios/sign-in",

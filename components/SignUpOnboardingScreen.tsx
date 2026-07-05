@@ -94,6 +94,7 @@ export default function SignUpOnboardingScreen() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [mpps, setMpps] = useState("");
+  const [especialidad, setEspecialidad] = useState("");
   const [cedula, setCedula] = useState<File | null>(null);
   const [cedulaData, setCedulaData] = useState<CedulaData | null>(null);
   const [extracting, setExtracting] = useState(false);
@@ -200,13 +201,20 @@ export default function SignUpOnboardingScreen() {
     }
   };
 
+  const especialidadValue = especialidad.trim();
+
   const submit = () => {
     const cedula = cedulaData?.cedula;
-    if (!centro || !cedula) return;
+    if (!centro || !cedula || !especialidadValue) return;
     setError(null);
     const centroId = centro.id;
     startTransition(async () => {
-      const res = await signUpAction(centroId, mpps ? Number(mpps) : 0, cedula);
+      const res = await signUpAction(
+        centroId,
+        mpps ? Number(mpps) : 0,
+        cedula,
+        especialidadValue
+      );
       if (res.ok) router.replace("/dashboard");
       else setError(res.error);
     });
@@ -284,6 +292,25 @@ export default function SignUpOnboardingScreen() {
           value={mpps}
           onChange={(e) => setMpps(e.target.value)}
           className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="especialidad"
+          className="block text-sm font-medium text-slate-700"
+        >
+          Especialidad <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="especialidad"
+          type="text"
+          required
+          value={especialidad}
+          onChange={(e) => setEspecialidad(e.target.value)}
+          placeholder="Ej. Medicina interna"
+          aria-label="Especialidad"
+          className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
         />
       </div>
 
@@ -373,7 +400,7 @@ export default function SignUpOnboardingScreen() {
         id="complete-signup-button"
         type="button"
         onClick={submit}
-        disabled={isPending || extracting || !verified || !centro}
+        disabled={isPending || extracting || !verified || !centro || !especialidadValue}
         className="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending ? "Registrando…" : "Confirmar registro"}
