@@ -24,9 +24,9 @@ export default function SignupGoogleDialog({
         aria-label="Crear cuenta"
         className="relative w-full max-w-sm rounded-lg bg-white p-5 shadow-xl"
       >
-        <h3 className="text-base font-semibold text-slate-900">Crear cuenta</h3>
+        <h3 className="text-base font-semibold text-slate-900">Registrate</h3>
         <p className="mt-2 text-sm text-slate-600">
-          ¿Querés crear una cuenta con tu cuenta de Google?
+          Crea tu cuenta
         </p>
         <div className="mt-5 flex justify-end gap-2">
           <button
@@ -37,12 +37,32 @@ export default function SignupGoogleDialog({
             Cancelar
           </button>
           <button
+            id="google-button"
             type="button"
             onClick={onConfirm}
             disabled={busy}
-            className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700 disabled:opacity-60"
+            style={{
+              height: 48,
+              paddingLeft: 12,
+              paddingRight: 12,
+              backgroundColor: "#F2F2F2",
+              color: "#1F1F1F",
+              fontFamily: '"Google Sans", Roboto, Arial, sans-serif',
+              fontWeight: 500,
+              fontSize: 14,
+              lineHeight: "20px",
+            }}
+            className="inline-flex items-center rounded-full border-0 transition hover:brightness-95 disabled:opacity-60"
           >
-            Ok
+            <img
+              src="/google-icon-neutral.svg"
+              alt=""
+              aria-hidden
+              width={48}
+              height={48}
+              style={{ marginRight: 10 }}
+            />
+            Continuar con Google
           </button>
         </div>
       </div>
