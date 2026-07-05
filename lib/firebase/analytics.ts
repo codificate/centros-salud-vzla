@@ -52,8 +52,3 @@ export function setAnalyticsUser(uid: string | null): void {
     if (isDev) console.warn("[analytics] setUser failed", err);
   }
 }
-
-/** Thin hook for client components. `track` is already a stable reference. */
-export function useAnalytics(): { track: typeof track } {
-  return { track };
-}

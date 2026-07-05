@@ -17,7 +17,9 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  // Log page_view after init resolves so SPA navigations are captured.
+  // Keyed on pathname only (not searchParams): this app navigates by distinct
+  // paths, and reading searchParams here would force a Suspense boundary on the
+  // whole tree in Next 14. Log after init resolves so SPA navigations are caught.
   useEffect(() => {
     let cancelled = false;
     void initAnalytics().then(() => {
