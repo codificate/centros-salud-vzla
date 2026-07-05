@@ -49,6 +49,10 @@ decentralized resource tracking.
 * `app/actions/` — Server Actions (`centros`, `usuarios`, `insumos`).
 * `components/providers/` — `AuthProvider`, `SignUpFlowProvider`.
 * `components/hooks/useSignupFlow.ts` — shared sign-up flow (drawer + navbar).
+* `components/CentroDrawer.tsx` — centro detail overlay from `/` (map + actions +
+  share). `components/CentroDetailScreen.tsx` — standalone shareable screen at
+  `/centro/[centroId]` (navbar + 2-column detail/insumos on wide, detail-only on
+  mobile). `components/PublicInsumosByCentro.tsx` — public supplies list.
 
 ## 4. AI Agents & Automated Workflows
 
@@ -73,6 +77,18 @@ decentralized resource tracking.
   "Finalizar registro".
 
 ## 5. Core Features & Data Flow
+
+### Public browsing & shareable centro
+* `/` (`components/CentrosClient.tsx`) — search + list/map toggle; tapping a
+  centro opens `CentroDrawer`.
+* Drawer actions: **Ver insumos** (inline panel on wide, else
+  `/insumos/centro/:id`), **Trabajo ahí** (sign-up flow; hidden when signed in),
+  **Cómo llegar** (Google Maps directions), **Compartir** (copies
+  `${origin}/centro/:id` to clipboard, fires `centro_share` analytics event).
+* `/centro/[centroId]` (`app/centro/[centroId]/page.tsx` → `CentroDetailScreen`)
+  — server fetches centros via `getCentros()`, `notFound()` if id missing;
+  renders navbar + centro detail. Wide: 2 columns (detail + `PublicInsumosByCentro`).
+  Mobile: detail only; **Ver insumos** routes to `/insumos/centro/:id`.
 
 ### Onboarding & Verification
 1. **OAuth:** Firebase Google sign-in.

@@ -45,6 +45,7 @@ app/                         Rutas (App Router)
 ├─ acerca/page.tsx           "/acerca" → Acerca de
 ├─ onboarding/page.tsx       "/onboarding" → registro (cédula + MPPS + centro)
 ├─ dashboard/page.tsx        "/dashboard" → panel del usuario (protegido)
+├─ centro/[centroId]         "/centro/:id" → pantalla de detalle de un centro (compartible)
 ├─ insumos/centro/[centroId] "/insumos/centro/:id" → insumos públicos de un centro
 ├─ api/cedula/route.ts       POST → OCR + verificación de cédula (Node runtime)
 ├─ actions/                  Server Actions (centros, insumos, usuarios, tiposInsumos)
@@ -56,6 +57,7 @@ components/                  UI (screens + piezas reutilizables)
 ├─ CentrosList.tsx           Lista de centros
 ├─ CentrosMap.tsx            Mapa con todos los centros
 ├─ CentroDrawer.tsx          Panel de detalle de un centro + acciones
+├─ CentroDetailScreen.tsx    Pantalla "/centro/:id": detalle + insumos (2 columnas en pantalla ancha)
 ├─ CentroMap.tsx             Mini-mapa de un centro
 ├─ PublicInsumosByCentro.tsx Insumos públicos de un centro
 ├─ SignUpOnboardingScreen.tsx Flujo de registro (subir cédula, validar, asociar centro)
@@ -88,6 +90,7 @@ middleware.ts                Protege "/dashboard/*": sin token → redirige a "/
 |------|----------|--------|----------|
 | `/` | `CentrosClient` | Público | Busca centros, cambia entre lista y mapa, abre el detalle |
 | `/acerca` | `AboutUsScreen` | Público | Propósito, ética, privacidad y postura del proyecto |
+| `/centro/:id` | `CentroDetailScreen` | Público | Detalle compartible de un centro: mapa, datos y acciones; insumos en columna aparte en pantalla ancha |
 | `/insumos/centro/:id` | `PublicInsumosByCentro` | Público | Insumos requeridos por un centro (vista responsive) |
 | `/onboarding` | `SignUpOnboardingScreen` | Requiere sesión | Registro: subir cédula, validar identidad, asociar centro |
 | `/dashboard` | `DashboardScreen` | **Protegido** | Panel del usuario: centros asociados + reportar insumos |
@@ -104,9 +107,12 @@ middleware.ts                Protege "/dashboard/*": sin token → redirige a "/
             • Ver insumos   → panel inline (pantalla ancha) o /insumos/centro/:id
             • Trabajo ahí   → inicia el flujo de registro (oculto si ya hay sesión)
             • Cómo llegar   → abre Google Maps con la ruta
+            • Compartir     → copia /centro/:id al portapapeles
 ```
 
 > Nota: el botón **"Trabajo ahí"** se oculta cuando hay sesión de Firebase activa, para evitar que un usuario ya registrado asocie un centro nuevo desde `/`.
+
+> El enlace **"Compartir"** (sobre el mapa) copia la URL pública `/centro/:id`. Al abrirla se muestra `CentroDetailScreen`: en pantalla ancha, detalle e insumos en dos columnas; en móvil solo el detalle y el botón "Ver insumos" navega a `/insumos/centro/:id`.
 
 ### 2. Registro / inicio de sesión
 
@@ -172,6 +178,7 @@ The `AnalyticsProvider` (root layout) automatically tracks `page_view` on every 
 | `signup_abandon` | `step: number` | User quits onboarding |
 | `centro_select` | `centro_id: string`, `source: "list" \| "map" \| "autocomplete"` | User picks a centro |
 | `centro_view_insumos` | `centro_id: string` | User views centro supplies |
+| `centro_share` | `centro_id: string` | User copies centro share link |
 | `insumo_filter` | `filter_type: string`, `value: string` | Supply filter applied |
 | `map_interaction` | `action: "marker_click" \| "zoom"`, `centro_id?: string` | Map action |
 | `nav_click` | `target: string` | Navigation link clicked |
