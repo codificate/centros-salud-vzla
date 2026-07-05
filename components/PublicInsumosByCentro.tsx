@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { IconFilter, IconSearch, IconX } from "@tabler/icons-react";
 import { fetchInsumosAction } from "@/app/actions/insumos";
+import {
+  validateInsumosFilter,
+  type InsumosFilter,
+} from "@/lib/api/insumosFilter";
 import CentroInsumoItem from "@/components/CentroInsumoItem";
 import type { InsumoResponseItem } from "@/lib/api/types";
 
@@ -17,9 +21,18 @@ function daysAgo(days: number): string {
   return toInputDate(new Date(Date.now() - days * DAY_MS));
 }
 
-interface DateRange {
-  from: string;
-  to: string;
+/** Native date input value `YYYY-MM-DD` -> API `DD-MM-YYYY`. */
+function toApiDate(value: string): string {
+  const [year, month, day] = value.split("-");
+  return `${day}-${month}-${year}`;
+}
+
+function describeFilter(filter: InsumosFilter): string {
+  if (filter.semanas !== undefined)
+    return `Últimas ${filter.semanas} ${
+      filter.semanas === 1 ? "semana" : "semanas"
+    }`;
+  return `${filter.desde ?? "…"} → ${filter.hasta ?? "hoy"}`;
 }
 
 export default function PublicInsumosByCentro({
@@ -34,57 +47,62 @@ export default function PublicInsumosByCentro({
   const [query, setQuery] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
 
-  // Draft filter (edited in the panel) vs. applied filter (drives the list).
+  // Draft dates (edited in the panel) vs. applied filter (drives the fetch).
   const [draftFrom, setDraftFrom] = useState("");
   const [draftTo, setDraftTo] = useState("");
-  const [range, setRange] = useState<DateRange | null>(null);
+  const [filter, setFilter] = useState<InsumosFilter | null>(null);
+  const [filterError, setFilterError] = useState<string | null>(null);
 
   const today = useMemo(() => toInputDate(new Date()), []);
   const twoMonthsAgo = useMemo(() => daysAgo(60), []);
 
+  // Server-side filtering: refetch whenever the centro or applied filter changes.
   useEffect(() => {
     setItems(null);
     setError(null);
     startTransition(async () => {
-      const res = await fetchInsumosAction(centroId);
+      const res = await fetchInsumosAction(centroId, filter ?? undefined);
       if (res.ok) setItems(res.data.insumos);
       else setError(res.error);
     });
-  }, [centroId]);
+  }, [centroId, filter]);
 
+  // Text search stays client-side over the already-filtered result.
   const filtered = useMemo(() => {
     if (!items) return [];
     const q = query.trim().toLowerCase();
-    const fromT = range?.from ? new Date(range.from).getTime() : null;
-    const toT = range?.to ? new Date(`${range.to}T23:59:59`).getTime() : null;
+    if (!q) return items;
+    return items.filter((item) => item.descripcion.toLowerCase().includes(q));
+  }, [items, query]);
 
-    return items.filter((item) => {
-      if (q && !item.descripcion.toLowerCase().includes(q)) return false;
-      if (fromT != null || toT != null) {
-        const t = new Date(item.create_at).getTime();
-        if (Number.isNaN(t)) return false;
-        if (fromT != null && t < fromT) return false;
-        if (toT != null && t > toT) return false;
-      }
-      return true;
-    });
-  }, [items, query, range]);
-
-  const applyPreset = (days: number) => {
-    setDraftFrom(daysAgo(days));
-    setDraftTo(today);
+  const applyPreset = (semanas: number) => {
+    setDraftFrom("");
+    setDraftTo("");
+    setFilterError(null);
+    setFilter({ semanas });
+    setFilterOpen(false);
   };
 
-  const applyFilter = () => {
-    if (!draftFrom && !draftTo) return;
-    setRange({ from: draftFrom, to: draftTo || today });
+  const applyRange = () => {
+    const next: InsumosFilter = {
+      desde: draftFrom ? toApiDate(draftFrom) : undefined,
+      hasta: draftTo ? toApiDate(draftTo) : undefined,
+    };
+    const validation = validateInsumosFilter(next);
+    if (!validation.ok) {
+      setFilterError(validation.error);
+      return;
+    }
+    setFilterError(null);
+    setFilter(next);
     setFilterOpen(false);
   };
 
   const clearFilter = () => {
     setDraftFrom("");
     setDraftTo("");
-    setRange(null);
+    setFilterError(null);
+    setFilter(null);
   };
 
   return (
@@ -110,7 +128,7 @@ export default function PublicInsumosByCentro({
           aria-label="Filtrar por fecha"
           aria-expanded={filterOpen}
           className={`shrink-0 rounded-md border p-2 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500/40 ${
-            filterOpen || range
+            filterOpen || filter
               ? "border-sky-400 bg-sky-50 text-sky-700"
               : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
           }`}
@@ -124,15 +142,23 @@ export default function PublicInsumosByCentro({
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => applyPreset(7)}
-              className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+              onClick={() => applyPreset(1)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-sky-500/40 ${
+                filter?.semanas === 1
+                  ? "border-sky-400 bg-sky-100 text-sky-700"
+                  : "border-slate-300 bg-white text-slate-700 hover:border-sky-300 hover:text-sky-700"
+              }`}
             >
               1 semana
             </button>
             <button
               type="button"
-              onClick={() => applyPreset(14)}
-              className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+              onClick={() => applyPreset(2)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-sky-500/40 ${
+                filter?.semanas === 2
+                  ? "border-sky-400 bg-sky-100 text-sky-700"
+                  : "border-slate-300 bg-white text-slate-700 hover:border-sky-300 hover:text-sky-700"
+              }`}
             >
               2 semanas
             </button>
@@ -163,6 +189,12 @@ export default function PublicInsumosByCentro({
             </label>
           </div>
 
+          {filterError && (
+            <p className="mt-2 text-xs font-medium text-red-600" role="alert">
+              {filterError}
+            </p>
+          )}
+
           <div className="mt-3 flex justify-end gap-2">
             <button
               type="button"
@@ -173,7 +205,7 @@ export default function PublicInsumosByCentro({
             </button>
             <button
               type="button"
-              onClick={applyFilter}
+              onClick={applyRange}
               disabled={!draftFrom && !draftTo}
               className="rounded-md bg-sky-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500/40 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
@@ -183,15 +215,13 @@ export default function PublicInsumosByCentro({
         </div>
       )}
 
-      {range && (
+      {filter && (
         <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-1.5">
-          <span className="text-xs text-slate-500">
-            {range.from || "…"} → {range.to}
-          </span>
+          <span className="text-xs text-slate-500">{describeFilter(filter)}</span>
           <button
             type="button"
             onClick={clearFilter}
-            aria-label="Quitar filtro de fecha"
+            aria-label="Quitar filtro"
             className="rounded p-0.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
           >
             <IconX className="h-3.5 w-3.5" aria-hidden />
@@ -213,7 +243,7 @@ export default function PublicInsumosByCentro({
           <ul className="divide-y divide-slate-100">
             {filtered.map((insumo, i) => (
               <li key={`${insumo.descripcion}-${insumo.create_at}-${i}`}>
-                <CentroInsumoItem insumo={insumo} />
+                <CentroInsumoItem insumo={insumo} public />
               </li>
             ))}
           </ul>

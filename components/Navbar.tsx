@@ -77,6 +77,15 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
               <span className="hidden max-w-[10rem] truncate text-sm text-slate-600 sm:inline">
                 {user.displayName ?? user.email}
               </span>
+              {pathname !== "/dashboard" && (
+                <Link
+                  id="go-to-dashboard-button"
+                  href="/dashboard"
+                  className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+                >
+                  Ir al Panel
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={logout}

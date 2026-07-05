@@ -3,6 +3,39 @@
 All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased] — Insumos catalog, filters & onboarding polish
+
+### Added
+- **Tipos de insumos catalog** (`tipos-insumos`, public, no token):
+  `lib/api/tiposInsumos.ts` (`getTiposInsumos`, `cache()` + hourly revalidate) and
+  `app/actions/tiposInsumos.ts` (`fetchTiposInsumosAction`, `fetchTiposInsumos`).
+- **`TiposInsumosAutocomplete`**: session-cached catalog, search by `nombre` or
+  `categoría` (case-insensitive). Replaces the free-text `insumo-descripcion`
+  input on the dashboard; the "add insumo" payload now carries
+  `tipo_id`, `categoria`, `prioridad`, `unidad_medida`.
+- **`InsumoPriorityBadge`**: accent/case-normalized priority pill, reused in
+  `CentroInsumoItem` and `InsumosPanel`.
+- **Server-side insumos filtering** (`lib/api/insumosFilter.ts`): `semanas` (1–2)
+  or `desde`/`hasta` (`DD-MM-YYYY`, ≤2 months back, never future) validated and
+  serialized to query params; `getInsumosByCentro`/`fetchInsumosAction` accept a
+  filter. `PublicInsumosByCentro` drives the fetch from the filter (presets +
+  range) with client-side text search on top.
+- **`especialidad`** required field in the sign-up flow, threaded through
+  `signUpAction` → `signUp` into the request body.
+- **Centro distance guard** (`lib/geo.ts`, `distanceKm` haversine): block
+  associating a centro >100 km from the first associated one.
+- **Onboarding guard + navbar**: `/onboarding` blocks already-registered users
+  with a logout / "Ir al listado de centros" dialog; navbar shows "Ir al Panel"
+  for signed-in users off the dashboard.
+- **`ErrorDialog`**: modal error surface replacing inline `<p>` error labels.
+
+### Changed
+- `CentroInsumoItem` gains a `public` prop (default `false`): hides `created_by`
+  but keeps `create_at`; `categoría` and `unidad_medida` render on one row.
+
+### Fixed
+- `app/error.tsx`: copy fix ("Revísa tu conexión e intenta de nuevo").
+
 ## [Unreleased] — Dashboard API integration
 
 ### Added

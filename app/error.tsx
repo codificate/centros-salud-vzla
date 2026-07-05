@@ -7,7 +7,7 @@ export default function Error({ reset }: { reset: () => void }) {
         No se pudieron cargar los centros
       </h2>
       <p className="text-sm text-slate-600">
-        Revisá tu conexión e intentá de nuevo.
+        Revísa tu conexión e intenta de nuevo.
       </p>
       <button
         type="button"

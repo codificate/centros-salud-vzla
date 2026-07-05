@@ -5,9 +5,14 @@ import { useRouter } from "next/navigation";
 import { IconId, IconMapPin } from "@tabler/icons-react";
 import { useSignUpFlow } from "@/components/providers/SignUpFlowProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { signUpAction, abortSignUpAction } from "@/app/actions/usuarios";
+import {
+  signUpAction,
+  abortSignUpAction,
+  signInAction,
+} from "@/app/actions/usuarios";
 import { setTokenCookie } from "@/lib/firebase/token";
 import ExitConfirmDialog from "@/components/ExitConfirmDialog";
+import ErrorDialog from "@/components/ErrorDialog";
 import CentroAutocomplete from "@/components/CentroAutocomplete";
 import Navbar from "@/components/Navbar";
 
@@ -89,6 +94,7 @@ export default function SignUpOnboardingScreen() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [mpps, setMpps] = useState("");
+  const [especialidad, setEspecialidad] = useState("");
   const [cedula, setCedula] = useState<File | null>(null);
   const [cedulaData, setCedulaData] = useState<CedulaData | null>(null);
   const [extracting, setExtracting] = useState(false);
@@ -97,7 +103,33 @@ export default function SignUpOnboardingScreen() {
   const [confirmExitOpen, setConfirmExitOpen] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [exitError, setExitError] = useState<string | null>(null);
+  // Guard: `null` while checking, `true` when the signup is already complete.
+  const [alreadyRegistered, setAlreadyRegistered] = useState<boolean | null>(
+    null
+  );
+  const [leavingGuard, setLeavingGuard] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  // Signup is transactional: once complete the user lives on /dashboard.
+  // Reaching /onboarding again (e.g. browser back) is blocked here.
+  useEffect(() => {
+    let active = true;
+    signInAction().then((res) => {
+      if (active) setAlreadyRegistered(res.status === "exists");
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const goToCentros = () => router.replace("/");
+
+  const logoutFromGuard = async () => {
+    setLeavingGuard(true);
+    await logout();
+    setTokenCookie(null);
+    router.replace("/");
+  };
 
   const verified = useMemo(
     () => (cedulaData ? isCedulaMatch(cedulaData) : false),
@@ -169,17 +201,45 @@ export default function SignUpOnboardingScreen() {
     }
   };
 
+  const especialidadValue = especialidad.trim();
+
   const submit = () => {
     const cedula = cedulaData?.cedula;
-    if (!centro || !cedula) return;
+    if (!centro || !cedula || !especialidadValue) return;
     setError(null);
     const centroId = centro.id;
     startTransition(async () => {
-      const res = await signUpAction(centroId, mpps ? Number(mpps) : 0, cedula);
+      const res = await signUpAction(
+        centroId,
+        mpps ? Number(mpps) : 0,
+        cedula,
+        especialidadValue
+      );
       if (res.ok) router.replace("/dashboard");
       else setError(res.error);
     });
   };
+
+  if (alreadyRegistered) {
+    return (
+      <>
+        <Navbar />
+        <ExitConfirmDialog
+          open
+          busy={leavingGuard}
+          error={null}
+          title="Ya completaste tu registro"
+          message="Tu cuenta ya está registrada. ¿Querés cerrar sesión o volver al listado de centros?"
+          confirmLabel="Cerrar sesión"
+          busyLabel="Cerrando…"
+          cancelLabel="Ir al listado de centros"
+          cancelDisabledWhileBusy={false}
+          onConfirm={logoutFromGuard}
+          onCancel={goToCentros}
+        />
+      </>
+    );
+  }
 
   return (
     <>
@@ -232,6 +292,25 @@ export default function SignUpOnboardingScreen() {
           value={mpps}
           onChange={(e) => setMpps(e.target.value)}
           className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="especialidad"
+          className="block text-sm font-medium text-slate-700"
+        >
+          Especialidad <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="especialidad"
+          type="text"
+          required
+          value={especialidad}
+          onChange={(e) => setEspecialidad(e.target.value)}
+          placeholder="Ej. Medicina interna"
+          aria-label="Especialidad"
+          className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
         />
       </div>
 
@@ -317,17 +396,21 @@ export default function SignUpOnboardingScreen() {
           </div>
         ))}
 
-      {error && <p className="text-sm text-amber-700">{error}</p>}
-
       <button
         id="complete-signup-button"
         type="button"
         onClick={submit}
-        disabled={isPending || extracting || !verified || !centro}
+        disabled={isPending || extracting || !verified || !centro || !especialidadValue}
         className="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending ? "Registrando…" : "Confirmar registro"}
       </button>
+
+      <ErrorDialog
+        open={error !== null}
+        message={error}
+        onClose={() => setError(null)}
+      />
 
       <ExitConfirmDialog
         open={confirmExitOpen}
