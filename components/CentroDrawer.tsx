@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   IconFirstAidKit,
@@ -12,6 +12,7 @@ import type { Centro } from "@/lib/centros";
 import PublicInsumosByCentro from "@/components/PublicInsumosByCentro";
 import SignupGoogleDialog from "@/components/SignupGoogleDialog";
 import { useSignupFlow } from "@/components/hooks/useSignupFlow";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { useIsWideScreen } from "@/lib/screen";
 
 const ACTIONS = [
@@ -52,6 +53,14 @@ export default function CentroDrawer({
   const open = centro !== null;
   const router = useRouter();
   const isWide = useIsWideScreen();
+  const { user } = useAuth();
+
+  // Hide "trabajo" while a Firebase session is active: signed-in users
+  // must not associate a new centro from the "/" route.
+  const actions = useMemo(
+    () => (user ? ACTIONS.filter(({ key }) => key !== "trabajo") : ACTIONS),
+    [user]
+  );
 
   const { askGoogle, busy, error: flowError, start, confirmGoogle, cancelGoogle, reset } =
     useSignupFlow();
@@ -186,8 +195,13 @@ export default function CentroDrawer({
                 </div>
               </dl>
 
-              <div id="centro-action-buttons" className="mt-4 grid grid-cols-3 gap-3">
-                {ACTIONS.map(({ key, label, Icon }) => {
+              <div
+                id="centro-action-buttons"
+                className={`mt-4 grid gap-3 ${
+                  actions.length === 3 ? "grid-cols-3" : "grid-cols-2"
+                }`}
+              >
+                {actions.map(({ key, label, Icon }) => {
                   const isInsumos = key === "insumos";
                   return (
                     <button
