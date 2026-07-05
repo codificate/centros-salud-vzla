@@ -36,6 +36,7 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
         <div className="flex items-center gap-4">
           <Link
             href="/"
+            onClick={() => track("nav_click", { target: "home" })}
             className="flex items-center gap-2 font-semibold text-slate-900"
           >
             <span className="grid h-7 w-7 place-items-center rounded-md bg-sky-600 text-xs font-bold text-white">
@@ -46,6 +47,7 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
 
           <Link
             href="/acerca"
+            onClick={() => track("nav_click", { target: "acerca" })}
             aria-current={pathname === "/acerca" ? "page" : undefined}
             className={`text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-sky-500/40 ${
               pathname === "/acerca"
@@ -83,6 +85,7 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
                 <Link
                   id="go-to-dashboard-button"
                   href="/dashboard"
+                  onClick={() => track("nav_click", { target: "dashboard" })}
                   className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
                 >
                   Ir al Panel

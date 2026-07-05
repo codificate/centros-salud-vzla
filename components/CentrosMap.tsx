@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Centro } from "@/lib/centros";
+import { track } from "@/lib/firebase/analytics";
 
 const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const ATTR =
@@ -52,7 +53,11 @@ export default function CentrosMap({
         alt: c.nombre,
       })
         .addTo(map)
-        .on("click", () => onSelectRef.current(c))
+        .on("click", () => {
+          track("centro_select", { centro_id: String(c.id), source: "map" });
+          track("map_interaction", { action: "marker_click", centro_id: String(c.id) });
+          onSelectRef.current(c);
+        })
     );
 
     if (markers.length) {

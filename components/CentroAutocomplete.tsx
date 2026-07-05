@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchCentros } from "@/app/actions/centros";
 import type { Centro } from "@/lib/centros";
+import { track } from "@/lib/firebase/analytics";
 
 export default function CentroAutocomplete({
   selectedName = "",
@@ -24,6 +25,7 @@ export default function CentroAutocomplete({
 
   const handlePick = useCallback(
     (centro: Centro) => {
+      track("centro_select", { centro_id: String(centro.id), source: "autocomplete" });
       onPick(centro);
       setQuery("");
       setOpen(false);
@@ -58,8 +60,12 @@ export default function CentroAutocomplete({
         autoComplete="off"
         value={query}
         onChange={(e) => {
-          setQuery(e.target.value);
+          const val = e.target.value;
+          setQuery(val);
           setOpen(true);
+          if (val.trim()) {
+            track("search", { search_term: val.trim(), context: "centro_autocomplete" });
+          }
         }}
         onFocus={() => setOpen(true)}
         placeholder="Busca tu centro…"
