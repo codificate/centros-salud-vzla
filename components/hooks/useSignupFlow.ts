@@ -6,6 +6,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useSignUpFlow } from "@/components/providers/SignUpFlowProvider";
 import { signInAction } from "@/app/actions/usuarios";
 import { signInWithGoogle } from "@/lib/firebase/google";
+import { track } from "@/lib/firebase/analytics";
 import type { Centro } from "@/lib/api/types";
 
 /**
@@ -41,8 +42,10 @@ export function useSignupFlow() {
       setBusy(true);
       const res = await signInAction();
       setBusy(false);
-      if (res.status === "exists" || res.status === "not_found")
+      if (res.status === "exists" || res.status === "not_found") {
+        track("sign_up", { method: "google" });
         goOnboarding(centro);
+      }
       else if (res.status === "unauthenticated") setAskGoogle(true);
       else setError(res.message);
     },
@@ -56,6 +59,7 @@ export function useSignupFlow() {
       setError(null);
       try {
         await signInWithGoogle(); // account chooser + persist token
+        track("sign_up", { method: "google" });
         await signInAction(); // refresh session now that token cookie is set
         goOnboarding(centro);
       } catch {

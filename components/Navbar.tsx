@@ -7,6 +7,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useSignupFlow } from "@/components/hooks/useSignupFlow";
 import { signInWithGoogle } from "@/lib/firebase/google";
 import SignupGoogleDialog from "@/components/SignupGoogleDialog";
+import { track } from "@/lib/firebase/analytics";
 
 export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
     setLoginBusy(true);
     try {
       await signInWithGoogle(); // popup + persists token cookie
+      track("login", { method: "google" });
       router.push("/dashboard");
     } catch {
       // user closed the popup / sign-in failed — no-op
@@ -88,7 +90,10 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
               )}
               <button
                 type="button"
-                onClick={logout}
+                onClick={() => {
+                  track("logout", {});
+                  logout();
+                }}
                 className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
               >
                 Salir
