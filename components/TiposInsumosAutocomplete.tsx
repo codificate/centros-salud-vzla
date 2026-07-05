@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchTiposInsumos } from "@/app/actions/tiposInsumos";
 import InsumoPriorityBadge from "@/components/InsumoPriorityBadge";
 import type { TipoInsumo } from "@/lib/api/types";
+import { track } from "@/lib/firebase/analytics";
 
 // Module-level cache: fetch the catalog once per session, reuse across mounts.
 let catalogCache: Promise<TipoInsumo[]> | null = null;
@@ -51,6 +52,7 @@ export default function TiposInsumosAutocomplete({
 
   const handlePick = useCallback(
     (tipo: TipoInsumo) => {
+      track("insumo_filter", { filter_type: "tipo", value: String(tipo.nombre) });
       onPick(tipo);
       setQuery(tipo.nombre);
       setOpen(false);

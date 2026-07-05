@@ -9,6 +9,7 @@ import {
   IconArrowBearRight,
 } from "@tabler/icons-react";
 import type { Centro } from "@/lib/centros";
+import { track } from "@/lib/firebase/analytics";
 import PublicInsumosByCentro from "@/components/PublicInsumosByCentro";
 import SignupGoogleDialog from "@/components/SignupGoogleDialog";
 import { useSignupFlow } from "@/components/hooks/useSignupFlow";
@@ -83,8 +84,16 @@ export default function CentroDrawer({
     insumos: centro
       ? () => {
           // Wide: expand the drawer inline. Responsive: go to a dedicated route.
-          if (isWide) setShowInsumos((v) => !v);
-          else router.push(`/insumos/centro/${centro.id}`);
+          if (isWide) {
+            const willOpen = !showInsumos;
+            setShowInsumos(willOpen);
+            if (willOpen) {
+              track("centro_view_insumos", { centro_id: String(centro.id) });
+            }
+          } else {
+            track("centro_view_insumos", { centro_id: String(centro.id) });
+            router.push(`/insumos/centro/${centro.id}`);
+          }
         }
       : undefined,
     trabajo: centro ? () => start(centro) : undefined,

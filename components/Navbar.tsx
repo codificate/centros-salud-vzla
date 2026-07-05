@@ -7,6 +7,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useSignupFlow } from "@/components/hooks/useSignupFlow";
 import { signInWithGoogle } from "@/lib/firebase/google";
 import SignupGoogleDialog from "@/components/SignupGoogleDialog";
+import { track } from "@/lib/firebase/analytics";
 
 export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
     setLoginBusy(true);
     try {
       await signInWithGoogle(); // popup + persists token cookie
+      track("login", { method: "google" });
       router.push("/dashboard");
     } catch {
       // user closed the popup / sign-in failed — no-op
@@ -34,6 +36,7 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
         <div className="flex items-center gap-4">
           <Link
             href="/"
+            onClick={() => track("nav_click", { target: "home" })}
             className="flex items-center gap-2 font-semibold text-slate-900"
           >
             <span className="grid h-7 w-7 place-items-center rounded-md bg-sky-600 text-xs font-bold text-white">
@@ -44,6 +47,7 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
 
           <Link
             href="/acerca"
+            onClick={() => track("nav_click", { target: "acerca" })}
             aria-current={pathname === "/acerca" ? "page" : undefined}
             className={`text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-sky-500/40 ${
               pathname === "/acerca"
@@ -81,6 +85,7 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
                 <Link
                   id="go-to-dashboard-button"
                   href="/dashboard"
+                  onClick={() => track("nav_click", { target: "dashboard" })}
                   className="rounded-md bg-sky-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
                 >
                   Ir al Panel
@@ -88,7 +93,10 @@ export default function Navbar({ onExit }: { onExit?: () => void } = {}) {
               )}
               <button
                 type="button"
-                onClick={logout}
+                onClick={() => {
+                  track("logout", {});
+                  logout();
+                }}
                 className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
               >
                 Salir

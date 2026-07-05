@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test --conditions=react-server \"lib/**/*.test.ts\""
+    "test": "node --experimental-strip-types --test --conditions=react-server \"lib/**/*.test.ts\""
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

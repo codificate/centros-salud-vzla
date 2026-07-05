@@ -11,6 +11,7 @@ import {
   signInAction,
 } from "@/app/actions/usuarios";
 import { setTokenCookie } from "@/lib/firebase/token";
+import { track } from "@/lib/firebase/analytics";
 import ExitConfirmDialog from "@/components/ExitConfirmDialog";
 import ErrorDialog from "@/components/ErrorDialog";
 import CentroAutocomplete from "@/components/CentroAutocomplete";
@@ -167,7 +168,9 @@ export default function SignUpOnboardingScreen() {
       setExiting(false);
       return;
     }
-    // Only after 200: clear the selected centro, sign out, clear cookie, leave.
+    // Only after 200: the user has abandoned an in-progress signup.
+    track("signup_abandon", { step: 0 });
+    // Clear the selected centro, sign out, clear cookie, leave.
     setCentro(null);
     await logout(); // Firebase signOut
     setTokenCookie(null); // clear the auth token cookie
@@ -215,8 +218,10 @@ export default function SignUpOnboardingScreen() {
         cedula,
         especialidadValue
       );
-      if (res.ok) router.replace("/dashboard");
-      else setError(res.error);
+      if (res.ok) {
+        track("signup_step", { step: 0, step_name: "completed" });
+        router.replace("/dashboard");
+      } else setError(res.error);
     });
   };
 

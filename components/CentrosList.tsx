@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import type { Centro } from "@/lib/centros";
+import { track } from "@/lib/firebase/analytics";
 
 const PAGE_SIZE = 15;
 
@@ -29,7 +30,10 @@ export default function CentrosList({
         <li key={c.id}>
           <button
             type="button"
-            onClick={() => onSelect(c)}
+            onClick={() => {
+              track("centro_select", { centro_id: String(c.id), source: "list" });
+              onSelect(c);
+            }}
             className="block w-full rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-sky-300 hover:shadow focus:outline-none focus:ring-2 focus:ring-sky-500/40"
             aria-haspopup="dialog"
           >

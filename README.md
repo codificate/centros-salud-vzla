@@ -151,6 +151,32 @@ Protegido por [`middleware.ts`](middleware.ts): sin cookie de token, redirige a 
       └─ tipo de insumo + prioridad → red de necesidades del país
 ```
 
+## Analytics
+
+Events are tracked via **Firebase Analytics (GA4)** to measure feature adoption and user flows. The **single source of truth** for all tracked events is [`lib/firebase/events.ts`](lib/firebase/events.ts), which defines the `AnalyticsEventMap` interface. To add a new event:
+
+1. Add it to `AnalyticsEventMap` in `lib/firebase/events.ts` with its params.
+2. Emit it via `track(name, params)` from `lib/firebase/analytics.ts` (client-side only).
+
+The `AnalyticsProvider` (root layout) automatically tracks `page_view` on every route change and associates events with the Firebase user ID. Analytics is a safe no-op when `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` is unset or on the server.
+
+**Tracked events:**
+
+| Event | Params | Context |
+|-------|--------|---------|
+| `page_view` | `page_path: string` | Auto-tracked on route change |
+| `login` | `method: string` | Google login |
+| `logout` | *(none)* | User logout |
+| `sign_up` | `method: string` | New user signup |
+| `signup_step` | `step: number`, `step_name: string` | Onboarding progress |
+| `signup_abandon` | `step: number` | User quits onboarding |
+| `centro_select` | `centro_id: string`, `source: "list" \| "map" \| "autocomplete"` | User picks a centro |
+| `centro_view_insumos` | `centro_id: string` | User views centro supplies |
+| `insumo_filter` | `filter_type: string`, `value: string` | Supply filter applied |
+| `map_interaction` | `action: "marker_click" \| "zoom"`, `centro_id?: string` | Map action |
+| `nav_click` | `target: string` | Navigation link clicked |
+| `search` | `search_term: string`, `context: string` | Search performed |
+
 ## Seguridad y privacidad
 
 - Autenticación con Firebase; el token viaja en cookie y valida las Server Actions y `/api/cedula`.
