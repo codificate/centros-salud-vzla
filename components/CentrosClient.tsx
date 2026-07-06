@@ -8,6 +8,7 @@ import { fetchCentros } from "@/app/actions/centros";
 import CentroDrawer from "@/components/CentroDrawer";
 import CentrosList from "@/components/CentrosList";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const CentrosMap = dynamic(() => import("@/components/CentrosMap"), {
   ssr: false,
@@ -129,6 +130,7 @@ export default function CentrosClient({
         )}
       </main>
 
+      <Footer />
       <CentroDrawer centro={active} onClose={() => setActive(null)} />
     </>
   );

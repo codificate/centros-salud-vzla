@@ -1,5 +1,6 @@
 import { IconShieldCheck, IconLock } from "@tabler/icons-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 /**
  * AboutUsScreen — "/acerca"
@@ -93,6 +94,7 @@ export default function AboutUsScreen() {
           </p>
         </section>
       </main>
+      <Footer />
     </>
   );
 }
